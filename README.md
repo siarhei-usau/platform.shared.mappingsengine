@@ -183,7 +183,7 @@ A sample mappings instructions is as follows:
    "mappings": [
       {
           "type": "rename",
-          "fromPath": "$.book.body[0].book-part[0].book-part-meta[0].book-part-id[0].text",
+          "fromPath": "$.book.body[0].book-part[0].book-part-meta[0].book-part-id[0].value",
           "toPath": "@....book-pieces.id",
           "mode": "replace"
       },
@@ -198,7 +198,7 @@ A sample mappings instructions is as follows:
           "filters": [
               {
                 "lookup-field": "AN",
-                "lookup-value": "$.book[0].body[0].book-part[0].book-part-meta[0].book-part-id[0].text"
+                "lookup-value": "$.book[0].body[0].book-part[0].book-part-meta[0].book-part-id[0].value"
               },
               {
                 "lookup-field": "Type",
@@ -211,7 +211,7 @@ A sample mappings instructions is as follows:
                "subject": [
                  {
                    "id": "{{Term_Id}}",
-                   "text": "{{Term}}"
+                   "value": "{{Term}}"
                  }
                ]
           },
@@ -224,5 +224,10 @@ A sample mappings instructions is as follows:
           "//book[*]/body[*]/book-part[*]/body[*]/sec"
        ]
    }
-}
+
 ```
+
+*TBD:*
+
+* configuration for paths that should be treated as single value, not arrays
+* configuration for paths that should be collapsed into their parent (i.e. text value)
