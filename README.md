@@ -12,7 +12,13 @@ With Java 8 installed, execute:
 
 (on Windows, run `gradlew.bat` instead)
 
-## Installation
+## Testing the Mapper from the Command-Line
+
+**TBD** 
+
+_(TODO: package as app, add command-line here)_
+
+## Installation into StreamSets Data Collector (SDC)
 
 _(run a build first, see above)_
 
@@ -80,10 +86,6 @@ pipeline to do a larger conversion.
 The `XML2JSON Canonical Processor` can work with any source that either creates a `/fileRef` field
 or that adds the full XML as one string field, just change Raw XML Field setting to the input field
 name.  It must be of type `String` or of type `FileRef`.
-
-## Using the Mapper from the Command-Line
-
-**TBD**
 
 ## Mapping Instructions / Configuration
 
