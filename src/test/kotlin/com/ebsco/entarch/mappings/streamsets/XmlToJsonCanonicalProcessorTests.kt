@@ -19,6 +19,8 @@ import java.io.StringReader
 import java.io.StringWriter
 import kotlin.test.assertEquals
 
+// TODO: ok, these were more development harnesses than tests, change this to be more realistic tests
+
 class XmlToJsonCanonicalProcessorTests {
     @Test
     fun testProcessorCanRunFromString() {
