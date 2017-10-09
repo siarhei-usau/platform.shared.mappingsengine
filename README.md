@@ -383,3 +383,5 @@ A sample mappings instructions is as follows:
 
 * configuration for paths that should be treated as single value, not arrays
 * configuration for paths that should be collapsed into their parent (i.e. text value)
+* check ordering of attributes that they appear before other values in JSON maps (they are going at end, but should be first if possible)
+* reduce multiple spaces in embedded XML to one
