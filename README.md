@@ -154,7 +154,11 @@ The `id` and `notes` fields are mostly optional and later will be used to add Me
 logs or record attributes.  The `primaryKey` path statement is resolved last and should resolve to only 
 one value, otherwise is an error.
 
-An element designated as `jsonPath` is a normal JsonPath statement starting with `$.` from the root.
+An element designated as `jsonPath` is a normal JsonPath statement starting with `$.` from the root.  If
+a `jsonPath` is used in a target for a mapping, for example in the `toPath` setting, then it will be 
+prefixed matched against the `fromPath` and turned into a relative path downwards from any matching
+prefix.  This allows the rest of the path to work within the same array indexes for the matching prefix
+as the object on which the mapping is using as a source.
 
 An element designated as `jsonRelPath` is an expression starting with `@.` being relative to the current
 node, and each additional `.` going up one parent level.  For example, `@.foo` is field `foo` in the 
