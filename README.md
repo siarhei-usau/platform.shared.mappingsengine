@@ -87,4 +87,123 @@ name.  It must be of type `String` or of type `FileRef`.
 
 ## Mapping Instructions / Configuration
 
-**TBD**
+Mapping instructions are a series of settings defined in a JSON file that apply transformations to the
+in memory JSON model before canonical JSON is written to the record.  There are also extra settings
+that are passed in via the same configuration, for example to have some incoming XML XPaths retained
+as embedded XML instead of being converted to JSON.  The structure of the JSON is:
+
+```json
+{
+   "mappings": [
+      {
+          "type": "rename",
+          "fromPath": "<jsonPath>",
+          "toPath": "<jsonPath | jsonRelPath>",
+          "mode": "<mergeMode>"
+      },
+      {
+          "type": "copy",
+          "fromPath": "<jsonPath>",
+          "toPath": "<jsonPath | jsonRelPath>",
+          "mode": "<mergeMode>"
+      },
+      {
+          "type": "lookup",
+          "lookupResource": "<uriToLookupFile",
+          "filters": [
+              {
+                "lookup-field": "<fieldNameInLookup>",
+                "lookup-value": "<jsonPathFromDocument>"
+              },
+              {
+                "lookup-field": "<fieldNameInLookup>",
+                "lookup-value": ["value1", "value2", ..., "valueN"]
+              }
+          ],
+          "toPath": "<jsonPath>",
+          "template": {
+              <jsonTemplate>
+          },
+          "mode": "replace"
+      },
+      ...
+   ],
+   "configuration": {
+       "embedLiteralXmlAtPaths": [ "XPath1", "XPath2", ..., "XPathN"]
+   }
+}
+```
+
+For all instruction types, the `mergeMode` is one of:  `replace` (default) or `append`.  This can
+be omitted for `replace` as the default.
+
+An element designated as `jsonPath` is a normal JsonPath statement starting with `$.` from the root.
+
+An element designated as `jsonRelPath` is an expression starting with `@.` being relative to the current
+node, and each additional `.` going up one parent level.  For example, `@.foo` is field `foo` in the 
+same object as the source being copied or renamed.  But `@..foo` would be a sibling to the
+field being renamed (in its parent), and `@...foo` would be up another level and so on.
+
+An element designated as `jsonTemplate` is JSON that should be inserted at the point represented by
+`toPath` within the document, for each matching row in the lookup table.  The template can use 
+mustache style expressions based on the lookup elements matched, for example `{{Term_ID}}` would 
+substitute for the value of the `Term_ID` field from the matching record.
+
+The configuration section of the mappings instructions is for other settings relevant to how the
+mapping engine works.  The settings are:
+
+|Setting|Description|
+|-------|-----------|
+|embedLiteralXmlAtPaths|A list of XPath statements representing nodes in which their children should be retained as embeded XML and not converted to JSON.  This is done as XPath because it happens during the conversion to JSON and not after.
+
+
+A sample mappings instructions is as follows:
+
+```json
+{
+   "mappings": [
+      {
+          "type": "rename",
+          "fromPath": "$.book.body[0].book-part[0].book-part-meta[0].book-part-id[0].text",
+          "toPath": "@....book-pieces.id",
+          "mode": "replace"
+      },
+      {
+          "type": "copy",
+          "fromPath": "$.book.body[0].book-part[0].book-part-meta[0].book-part-id[?(@.type=='doi')].text",
+          "toPath": "@..doi"
+      },
+      {
+          "type": "lookup",
+          "lookupResource": "s3://bucket/prefix/lookup_w_ui.txt",
+          "filters": [
+              {
+                "lookup-field": "AN",
+                "lookup-value": "$.book[0].body[0].book-part[0].book-part-meta[0].book-part-id[0].text"
+              },
+              {
+                "lookup-field": "Type",
+                "lookup-value": ["subject", "subjectgeo"]
+              }
+          ],
+          "toPath": "$.book.front.article-meta.article-categories.subj-group",
+          "template": {
+               "group_type": "ebsco_{{Type}}",
+               "subject": [
+                 {
+                   "id": "{{Term_Id}}",
+                   "text": "{{Term}}"
+                 }
+               ]
+          },
+          "mode": "append"
+      }
+   ],
+   "configuration": {
+       "embedLiteralXmlAtPaths": [ 
+          "//book[*]/body[*]/book-part[*]/book-front[*]/sec",
+          "//book[*]/body[*]/book-part[*]/body[*]/sec"
+       ]
+   }
+}
+```
