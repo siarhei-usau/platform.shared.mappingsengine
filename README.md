@@ -24,38 +24,35 @@ _(run a build first, see above)_
 
 Download and isntall StreamSets Data Collector (SDC) `2.7.1.1`
 
-After building the sdc-mappings-engine project, copy the 
-resulting `*.tgz` file from `build/distributions into your 
-SDC install directory at `${sdc-install-dir}/user-libs` and
-untar the archive there, which will create a subdirectory.
+After building the sdc-mappings-engine project:
+1. copy the resulting `*.tgz` file from `build/distributions into your 
+SDC install directory at `${sdc-install-dir}/user-libs` 
 
-Note the name of this directory so that you can edit the security
-policy for SDC to allow this plugin to access disk and other
-services of the host machine.  
+2. and untar the archive there, which will create a subdirectory. Note the name of this directory so that you can edit the security
+policy for SDC to allow this plugin to access disk and other services of the host machine.  
 
-Edit file `${sdc-install-dir}/etc/sdc-security.policy` and add this
-section to the end:
+3. Edit file `${sdc-install-dir}/etc/sdc-security.policy` and add this section to the end:
+   
+    ```
+    grant codebase "file://${sdc.dist.dir}/user-libs/mappings-prototype-1.0.1-SNAPSHOT/-" {
+      permission java.security.AllPermission;
+    };
+    ```
 
-```
-grant codebase "file://${sdc.dist.dir}/user-libs/mappings-prototype-1.0.1-SNAPSHOT/-" {
-  permission java.security.AllPermission;
-};
-```
+    Note that you should substitute the correct directory name for the tgz you
+    unarchived into the first line of that file.  If you want to grant more narrow
+    permissions, you can add just the settings needed, such as access to read files
+    from a data input directory:
+    
+    ```
+    grant codebase "file://${sdc.dist.dir}/user-libs/mappings-prototype-1.0.1-SNAPSHOT/-" {
+       permission java.io.FilePermission "home/me/test/data/*", "read";
+    };
+    ```
 
-Note that you should substitute the correct directory name for the tgz you
-unarchived into the first line of that file.  If you want to grant more narrow
-permissions, you can add just the settings needed, such as access to read files
-from a data input directory:
+4. Restart SDC when done.
 
-```
-grant codebase "file://${sdc.dist.dir}/user-libs/mappings-prototype-1.0.1-SNAPSHOT/-" {
-   permission java.io.FilePermission "home/me/test/data/*", "read";
-};
-```
-
-Restart SDC when done.
-
-Note, any version number changes would require this policy file to be updated to match the directory 
+Any version number changes would require this policy file to be updated to match the directory 
 name of the installed plugin.
 
 ## Using the Mapper in an SDC Pipeline
@@ -64,21 +61,25 @@ _(you can import the `sample/Mappings Example.json` from this repo into SDC and 
 mentioned below to be correct for your machine, or start from scratch after you read the base SDC
 documentation)_
 
-With the mapper engine installed, create a new pipeline.  
+With the mapper engine installed:
 
-Add an Origin of type `Directory` and configure the `Files` tab to have a correct input folder,
-and File Name Pattern Mode to `Glob` with a filename pattern of something like `*.xml`.  Set
-the data format to `Whole File`.
+1. create a new pipeline.  
 
-Add a processor from that node of type `XML2JSON Canonical Processor ...`.  On the Mappings tab,
-you can leave the Raw XML Field to the default value of `/fileRef` (which will pick up the 
-file passed from the Directory origin), and add any mappings instructions to the `Mappings JSON` 
-field (leave blank for first test).
+2. Add an Origin of type `Directory` and 
+    * Set the `Files` tab to have a correct input folder
+    * Set File Name Pattern Mode to `Glob` with a filename pattern of something like `*.xml`
+    * Set the data format to `Whole File`.
 
-Add a Destination of Local Filesystem.  On the Output Files tab, set FileType to `Text Files`, and
-set Files Suffix to `json`, with Directory Template to some directory you wish to write the output
-files, and Max Records per File to `1`.  On the Data Format tab, set Data Format to `Text`, 
-Text Field Path to `/json`.
+3. Add a processor from that node of type `XML2JSON Canonical Processor ...`.  
+    * On the Mappings tab, you can leave the Raw XML Field to the default value of `/fileRef` (which will pick up the 
+      file passed from the Directory origin)
+    * Add any mappings instructions to the `Mappings JSON` field (leave blank for first test).
+
+4. Add a Destination of Local Filesystem.  
+    * On the Output Files tab, set FileType to `Text Files`
+    * Set Files Suffix to `json`, with Directory Template to some directory you wish to write the output files
+    * Set Max Records per File to `1`
+    * On the Data Format tab, set Data Format to `Text` and Text Field Path to `/json`.
 
 You can now hit the Preview button and view the records at each stage of the process.  Or run the 
 pipeline to do a larger conversion.
