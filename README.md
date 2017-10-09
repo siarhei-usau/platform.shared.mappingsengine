@@ -97,6 +97,7 @@ as embedded XML instead of being converted to JSON.  The structure of the JSON i
 ```json
 {
    "id": "<mappings ID>",
+   "version": "<version>",
    "notes": "<optionalNotes>",
    "primaryKey": "<jsonPath>",
    "mappings": [
@@ -176,6 +177,9 @@ A sample mappings instructions is as follows:
 
 ```json
 {
+   "id": "rs-mappings",
+   "version": "1.0.0",
+   "primaryKey": "$.book.body[0].book-part[0].book-part-meta[0].book-part-id[?(@.type=='doi')].value",
    "mappings": [
       {
           "type": "rename",
@@ -185,7 +189,7 @@ A sample mappings instructions is as follows:
       },
       {
           "type": "copy",
-          "fromPath": "$.book.body[0].book-part[0].book-part-meta[0].book-part-id[?(@.type=='doi')].text",
+          "fromPath": "$.book.body[0].book-part[0].book-part-meta[0].book-part-id[?(@.type=='doi')].value",
           "toPath": "@..doi"
       },
       {
