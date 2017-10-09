@@ -206,7 +206,7 @@ A sample mappings instructions is as follows:
                 "lookup-value": ["subject", "subjectgeo"]
               }
           ],
-          "toPath": "$.book.front.article-meta.article-categories.subj-group",
+          "toPath": "$.book.front[0].article-meta[0].article-categories[0].subj-group[0]",
           "template": {
                "group_type": "ebsco_{{Type}}",
                "subject": [
