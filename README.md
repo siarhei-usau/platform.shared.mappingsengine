@@ -180,18 +180,18 @@ A sample mappings instructions is as follows:
 {
    "id": "rs-mappings",
    "version": "1.0.0",
-   "primaryKey": "$.book.body[0].book-part[0].book-part-meta[0].book-part-id[?(@.type=='doi')].value",
+   "primaryKey": "$.book.body[0].book-part[0].book-part-meta[0].doi",
    "mappings": [
       {
           "type": "rename",
-          "fromPath": "$.book.body[0].book-part[0].book-part-meta[0].book-part-id[0].value",
-          "toPath": "@....book-pieces.id",
+          "fromPath": "$.book.body[0].book-part[0].book-part-meta[0].book-part-id[*].value",
+          "toPath": "@..id",
           "mode": "replace"
       },
       {
           "type": "copy",
-          "fromPath": "$.book.body[0].book-part[0].book-part-meta[0].book-part-id[?(@.type=='doi')].value",
-          "toPath": "@..doi"
+          "fromPath": "$.book.body[0].book-part[0].book-part-meta[0].book-part-id[?(@.pub-id-type=='doi')].id",
+          "toPath": "@...doi"
       },
       {
           "type": "lookup",
