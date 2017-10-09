@@ -96,20 +96,29 @@ as embedded XML instead of being converted to JSON.  The structure of the JSON i
 
 ```json
 {
+   "id": "<mappings ID>",
+   "notes": "<optionalNotes>",
+   "primaryKey": "<jsonPath>",
    "mappings": [
       {
+          "id": "<optionalID>",
+          "notes": "<optionalNotes>",
           "type": "rename",
           "fromPath": "<jsonPath>",
           "toPath": "<jsonPath | jsonRelPath>",
           "mode": "<mergeMode>"
       },
       {
+          "id": "<optionalID>",
+          "notes": "<optionalNotes>",
           "type": "copy",
           "fromPath": "<jsonPath>",
           "toPath": "<jsonPath | jsonRelPath>",
           "mode": "<mergeMode>"
       },
       {
+          "id": "<optionalID>",
+          "notes": "<optionalNotes>",
           "type": "lookup",
           "lookupResource": "<uriToLookupFile",
           "filters": [
@@ -138,6 +147,10 @@ as embedded XML instead of being converted to JSON.  The structure of the JSON i
 
 For all instruction types, the `mergeMode` is one of:  `replace` (default) or `append`.  This can
 be omitted for `replace` as the default.
+
+The `id` and `notes` fields are mostly optional and later will be used to add MetaData into StreamSets
+logs or record attributes.  The `primaryKey` path statement is resolved last and should resolve to only 
+one value, otherwise is an error.
 
 An element designated as `jsonPath` is a normal JsonPath statement starting with `$.` from the root.
 
