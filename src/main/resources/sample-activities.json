@@ -1,0 +1,59 @@
+{
+  "mapping-steps": [
+    {
+      "type": "move",
+      "from": "$.book[0].body[0].book-part[*].book-part-meta[0].book-part-id[0].text",
+      "to": "@....book-pieces.id"
+    },
+    {
+      "type": "rename",
+      "from": "jsonPath",
+      "to": "jsonPath | relative ref"
+    },
+    {
+      "type": "lookup",
+      "lookup-table": "s3://bucket/prefix/lookup_w_ui.txt",
+      "filters": [
+        {
+          "lookup-field": "AN",
+          "lookup-value": "$.book[0].body[0].book-part[0].book-part-meta[0].book-part-id[0].text"
+        },
+        {
+          "lookup-field": "Type",
+          "lookup-value": ["subject", "subjectgeo"]
+        }
+      ],
+      "target": "$.book.front.article-meta.article-categories.subj-group[?(@.group_type == 'ebsco_subject*')]",
+      "template": {
+        "subject-group": {
+          "group_type": "ebsco_?(@.LOOKUP.Type)",
+          "subject": [
+            {
+              "id": "?(@.LOOKUP.Term_Id)",
+              "text": "?(@.LOOKUP.Term)"
+            }
+          ]
+        }
+      },
+
+      "action": "replace"
+    }
+  ]
+}
+
+/// create:
+
+{
+  "subject-group": {
+    "group_type": "ebsco_geographic",  // subjectgeo in the look-value of Type caused this
+    "subject": [   // subjects isn't defined anywhere
+      {
+        "id": "1643430", // Term_Id
+        "text": "Unites States" // Term
+      },
+      {
+
+      }
+    ]
+  }
+},

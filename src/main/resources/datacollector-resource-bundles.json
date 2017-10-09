@@ -1,0 +1,5 @@
+[
+  "com.ebsco.entarch.mappings.streamsets.XmlToJsonCanonicalProcessor",
+  "com.ebsco.entarch.mappings.streamsets.Groups",
+  "com.ebsco.entarch.mappings.streamsets.Errors"
+]
