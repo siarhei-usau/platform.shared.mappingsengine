@@ -7,60 +7,7 @@ import com.streamsets.pipeline.api.Field
 import com.streamsets.pipeline.api.Record
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+// TODO: placeholders to let this build until merging in other project code from command-line tool
 
 fun DocumentContext.processMappings() {
     /* decompiled stub */
@@ -81,9 +28,3 @@ fun Record.jsonPathQueryResultPaths(jsonPath: String): List<String> {
     return emptyList()
 }
 
-
-
-
-val one = RenameManipulation("","")
-val two = CopyManipulation(listOf(""),"")
-val three = ConcatManipulation(listOf(""),",","")
