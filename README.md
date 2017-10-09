@@ -95,7 +95,7 @@ in memory JSON model before canonical JSON is written to the record.  There are 
 that are passed in via the same configuration, for example to have some incoming XML XPaths retained
 as embedded XML instead of being converted to JSON.  The structure of the JSON is:
 
-```json
+```text
 {
    "id": "<mappings ID>",
    "version": "<version>",
