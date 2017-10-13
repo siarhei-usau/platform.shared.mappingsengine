@@ -1,6 +1,6 @@
-# team.spike.sdc-mappings-engine
+# platform.shared.mappingsengine
 
-Spike Team mappings engine for StreamSets
+Platform - Mappings Engine
 
 ## Building
 
