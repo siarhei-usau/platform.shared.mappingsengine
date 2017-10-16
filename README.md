@@ -4,6 +4,8 @@ Platform - Mappings Engine
 
 ## Building
 
+To build the distributions for both StreamSets Plugin and the Test CLI, run a top level build:
+
 With Java 8 installed, execute:
 
 ```bash
@@ -12,11 +14,46 @@ With Java 8 installed, execute:
 
 (on Windows, run `gradlew.bat` instead)
 
+The distributions can be found in:
+
+| | |
+|---|---|
+|StreamSets|./mapping-engine-streamsets-plugin/build/distributions|
+|Test CLI|./mapping-engine-cli/build/distributions|
+
 ## Testing the Mapper from the Command-Line
 
-**TBD** 
+You can either unzip/untar the distribution created by the main build, and run the script in the `bin` directory, or you
+can use Gradle to install a copy within the build.
 
-_(TODO: package as app, add command-line here)_
+Build the CLI and install:
+
+```bash
+./gradlew :mapping-engine-cli:install
+```
+
+Then run the tool on Mac/Linux:
+
+```bash
+./mapping-engine-cli/build/install/mapping-engine-cli/bin/mapping-engine-cli  --xml sample/1920_rs_54172.xml --config sample/mappings-example.json 
+```
+
+or on Windows:
+
+```bash
+mapping-engine-cli\build\install\mapping-engine-cli\bin\mapping-engine-cli.bat  --xml sample\1920_rs_54172.xml --config sample\mappings-example.json 
+```
+
+Command-line options:
+
+|Option|Description|
+|------|-----------|
+|--xml|XML input file (required)|
+|--config|Mappings configuration file (required)|
+|--output|Optional output file (output is to stdout as well|
+
+
+_(TODO: place releases into GitHub releases)_
 
 ## Installation into StreamSets Data Collector (SDC)
 
@@ -34,7 +71,7 @@ policy for SDC to allow this plugin to access disk and other services of the hos
 3. Edit file `${sdc-install-dir}/etc/sdc-security.policy` and add this section to the end:
    
     ```
-    grant codebase "file://${sdc.dist.dir}/user-libs/mappings-prototype-1.0.1-SNAPSHOT/-" {
+    grant codebase "file://${sdc.dist.dir}/user-libs/mapping-engine-streamsets-plugin/-" {
       permission java.security.AllPermission;
     };
     ```
@@ -45,7 +82,7 @@ policy for SDC to allow this plugin to access disk and other services of the hos
     from a data input directory:
     
     ```
-    grant codebase "file://${sdc.dist.dir}/user-libs/mappings-prototype-1.0.1-SNAPSHOT/-" {
+    grant codebase "file://${sdc.dist.dir}/user-libs/mapping-engine-streamsets-plugin/-" {
        permission java.io.FilePermission "home/me/test/data/*", "read";
     };
     ```
@@ -177,8 +214,65 @@ mapping engine works.  The settings are:
 |-------|-----------|
 |embedLiteralXmlAtPaths|A list of XPath statements representing nodes in which their children should be retained as embeded XML and not converted to JSON.  This is done as XPath because it happens during the conversion to JSON and not after.
 
+## Details about JsonRelPath 
 
-A sample mappings instructions is as follows:
+When selecting from source paths, and writing to target paths you are using a `jsonRelPath`.  These consist of two parts:
+
+* An existing path part 
+* An update path part
+
+The parts are separated by a `+`.  The existing path must be present when calculated and compared against every source path. The
+update path optionally exists and any traversed elements can be created to make the full path complete.
+
+TODO: change raw comments below from code into full documentation...
+
+TODO: document what happens when you use an absolute `jsonRelPath` such as querying `$.b.c[*].d[*].e.f` and targeting
+`$.b.c[*]+x.y`.  In this case the common path between the two will resolve to the same objects, so if the source node
+found was `$.b.c[1].d[2].e.f` then the target path would resolve to base path `$.b.c[1]` with update part `x.y`.  
+
+```text
+ * Target Pathing:  resolving relative insertion paths.
+ *
+ * Those starting with `@.` are relative to the found object, and use normal JSON Path Syntax to path downwards
+ *          @.b.c.d.e.f
+ *
+ * Where any path elements must exist.  For elements that can be added if missing, a `+` replaces the `.` for the
+ * point at which new paths can be created:
+ *
+ *          @.b.c+d.e.f
+ *
+ * allows `d` to be added, then `e`, and then property `f` with whatever value is being set.  Existing elements
+ * are traversed instead of being inserted.
+ *
+ * To path upwards, use the `^` instead of the `.` and then resume downward with `.` or `+`.  For example:
+ *
+ *          @^y^x+d.e.f
+ *
+ * Would go up from the current node to a parent called `y`, its parent `x` and then allow `d` to be created and
+ * so on downwards.
+ *
+ * A relative path through an array index, has the following behavior:  If pathing through a parent array with `[*]`
+ * then the index used will be the same as that within the path of the current node.  for example, current node is:
+ *
+ *          $.b.c[1].d[2].e.f
+ *
+ * the relative path from `f` of `@^e^d[*]+z` or `@^e^d+z` would set insertion point at `$.a.c[1].d[2].z`
+ *
+ * An array must exist for the existing portion of the target path, or it is an invalid target. After the update
+ * marker of `+` the bahavior is:
+ *
+ *          [*]  all indexes that match at that point are updated (but not added)
+ *          [*+]  all indexes that match at that point are updated, if not present, an empty object is added
+ *          [+]  a new item will be added to the array at this point regardless of contents
+ *          [0]  the first item is updated (but not added)
+ *          [0+] the first item is updated and if not present, an empty object added
+ *
+ * After the update marker `+` you can only use simple pathing, no expressions can be used.  They can be used to
+ * the left of the marker to indicate a query for a path that already exists.
+ *
+```
+
+## A sample mappings instructions is as follows:
 
 ```json
 {
@@ -229,7 +323,7 @@ A sample mappings instructions is as follows:
           "//book[*]/body[*]/book-part[*]/body[*]/sec"
        ]
    }
-
+}
 ```
 
 ## Sample Converted JSON file (after XML conversion, pre-mapping)

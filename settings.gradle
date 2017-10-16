@@ -1,2 +1,3 @@
-rootProject.name = 'mappings-prototype'
+rootProject.name = 'platform.shared.mappingsengine'
 
+include 'mapping-engine-xml-reader', 'mapping-engine', 'mapping-engine-cli', 'mapping-engine-streamsets-plugin'

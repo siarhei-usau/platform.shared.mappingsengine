@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="utf-8"?><?xml-stylesheet href="file:////edc-filer1/busdev/PropPubProjects/Research Starters/Common Documents/CSS/CSS_Salem.css"?>
+<!DOCTYPE book
+  PUBLIC "-//Atypon//DTD Atypon Systems NCBI Book DTD Suite v2.3.0 20090807//EN" "atypon-book.dtd">
+<book xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" dtd-version="2.3" xml:lang="EN">
+   <book-series-meta>
+      <book-id pub-id-type="doi">10.3331/sp_ency</book-id>
+   </book-series-meta>
+   <book-meta>
+      <book-id pub-id-type="doi">10.3331/1920_rs</book-id>
+      <book-title-group>
+         <book-title>Salem Press Encyclopedia</book-title>
+         <alt-title alt-title-type="mid">G97S</alt-title>
+         <alt-title alt-title-type="derived_from_id">10.3331/1920</alt-title>
+         <alt-title alt-title-type="original">The Twenties in America</alt-title>
+      </book-title-group>
+      <publisher>
+         <publisher-name>Salem Press</publisher-name>
+      </publisher>
+      <pub-date pub-type="original">
+         <year>2012</year>
+      </pub-date>
+      <pub-date pub-type="update">
+         <year>2016</year>
+      </pub-date>
+   </book-meta>
+   <body>
+      <book-part id="Twenties_RS.10.3331.54172" indexed="true" book-part-type="chapter" xlink:type="simple" xml:lang="EN">
+         <book-part-meta>
+            <book-part-id pub-id-type="doi">10.3331/1920_rs_54172</book-part-id>
+            <title-group>
+               <title>Nielsen Company</title>
+            </title-group>
+            <contrib-group>
+               <contrib contrib-type="author" xlink:type="simple">
+                  <name name-style="western">
+                     <given-names>Jane
+            E.</given-names>
+                     <x xml:space="preserve"> </x>
+                     <surname>Turk</surname>
+                  </name>
+               </contrib>
+            </contrib-group>
+            <abstract abstract-type="short">
+               <p>The A. C. Nielsen Company began as a firm that used scientific methods to conduct
+            product research for corporate clients, mainly manufacturers of industrial machinery and
+            goods. This early work set the stage for the company to develop new methods of consumer
+            research, which would in turn lead them to create Nielsen ratings, the primary source of
+            television viewership information throughout the world.</p>
+            </abstract>
+            <custom-meta-wrap>
+               <custom-meta xlink:type="simple">
+                  <meta-name>Derived from</meta-name>
+                  <meta-value>10.3331/1920_0002</meta-value>
+               </custom-meta>
+            </custom-meta-wrap>
+         </book-part-meta>
+         <book-front>
+            <sec sec-type="reviewed">
+               <title/>
+               <p>
+                  <bold>Last reviewed:</bold> February 2016</p>
+            </sec>
+            
+            <sec sec-type="quickreference" indexed="true">
+               <title/>
+               <p>
+                  <sc>Identification:</sc> U.<?oxy_insert_start author="rhogan" timestamp="20140818T094134-0400"?>
+                  <?oxy_insert_end?>S. market research firm</p>
+               <p>
+                  <sc>Date:</sc> Established in 1923</p>
+            </sec>
+         </book-front>
+         <body>
+            <sec sec-type="bodytext" indexed="true">
+               <title/>
+               <p>
+                  <italic>The Nielsen Company began in 1923 as the A. C. Nielsen Company. It used scientific methods to conduct product research for corporate clients, mainly manufacturers of industrial machinery and goods. This early work set the stage for the company to develop new methods of consumer research, which would in turn lead them to create <related-article related-article-type="rs" xlink:href="89183461" xlink:type="simple">Nielsen ratings</related-article>, the primary source of television viewership information throughout the world.</italic>
+               </p>
+               <fig position="margin" fig-type="elec_use">
+                  <caption>
+                     <title>Carl Nielsen family at Fuglsang, Lolland</title>
+                     <p>The Carl Nielsen family in the courtyard in front of the Fuglsang Manor on Lolland where he was a frequent guest of the owners along with other composers and artists, c. 1915</p>
+                  </caption>
+                  <ext-link xlink:href="88960749-53229.jpg" ext-link-type="db-image" xlink:type="simple"/>
+                  <permissions>
+                     <copyright-statement>See page for author [Public domain], via Wikimedia Commons</copyright-statement>
+                  </permissions>
+               </fig>
+               <p>The<related-article related-article-type="rs" xlink:href="89313630" xlink:type="simple"> A. C. Nielsen Company</related-article> was founded in Chicago, Illinois, in 1923 by twenty-six-year-old Arthur C. Nielsen, who had graduated in 1918 from the University of Wisconsin-Madison as a top student in <related-article related-article-type="rs" xlink:href="89250440" xlink:type="simple">engineering</related-article>. After working as an engineer for several years, Nielsen borrowed $45,000 in seed money from a few of his fraternity brothers to start his own company.</p>
+               <p>The initial purpose of the Nielsen Company was to conduct what Nielsen called
+            “performance surveys.” These surveys were independent economic and engineering analyses
+            of the performance of industrial products in factories, the results of which could be
+            used by the product manufacturers to minimize wasteful spending and increase sales. By
+            the early 1930s, the A. C. Nielsen Company had conducted performance surveys for over
+            three hundred corporate clients.</p>
+               <p>The company was not profitable in its first decade of existence. Although the Nielsen surveys proved effective at increasing sales, <related-article related-article-type="rs" xlink:href="89163860" xlink:type="simple">market research</related-article> was a relatively unknown practice at the time, and the high cost of the surveys deterred many potential clients. After the stock market crash of 1929, clients became even scarcer, despite Nielsen’s assurance that investing in product research to bolster sales was even more crucial in a difficult market.</p>
+               <p>A change of direction that would improve the A. C. Nielsen Company’s fortune came when two of Nielsen’s clients, DuPont and General Electric, commissioned him to conduct market surveys based on interviews with current and prospective customers. These interview-based surveys proved much more marketable than the highly technical performance surveys, and in the early 1930s, the company shifted its focus to the manufacturers of consumer goods.</p>
+            </sec>
+            <sec sec-type="bodytext" indexed="true">
+               <title>Impact</title>
+               <p>Although the company remained in the red throughout the 1920s, the development of new consumer-based market research techniques proved to be its eventual ticket to profitability. In 1933, the A. C. Nielsen Company introduced its pioneering Nielsen Drug Index and Nielsen Food Index, which were used by the manufacturers of consumer products to track sales and guide marketing efforts. After experiencing a dramatic increase in profits during the middle part of the 1930s, the company invested in technology to measure radio listenership, which paved the way for the establishment of the <related-article related-article-type="rs" xlink:href="94982085" xlink:type="simple">Nielsen television ratings</related-article> in 1950.  In 1959, Nielsen Marketing Research was operating in eleven countries. By 1991, that figure had grown to twenty-seven, and the company reported worldwide revenues of $1.2 billion. </p>
+               <p>Nielsen became synonymous with US television audience measurement and expanded television audience research worldwide. By 1990, Nielsen’s metered research covered twenty-eight US markets that included half of the country’s population. Despite questions raised by some observers concerning Nielsen’s methods of data collection, and despite criticism of the practice of basing programming decisions on ratings,  Nielsen ratings continued to be the currency of negotiation in the multibillion-dollar business of buying and selling airtime. Programming decision makers in the television industry continued to rely on Nielsen Media Research statistics to determine which programs to air. </p>
+               <p>By the beginning of the twenty-first century, Nielsen Media Research expanded its coverage to more than seventy countries, representing 85 percent of global advertising spending in 2005. The A. C. Nielsen Company moved beyond research concerning traditional television broadcasting into research on viewers of cable television , regional cable systems, and satellite television as it adjusted to changes in the broadcasting industry. In 2008, the company released the first reports that detailed consumer viewing across television, the Internet, and mobile (hand-held) devices.</p>
+            </sec>
+            <sec sec-type="bodytext" indexed="true">
+               <title>Acquisitions and Growth</title>
+               <p>In 1984, the A. C. Nielsen Company was acquired by Dun &amp; Bradstreet (D&amp;B), a century-old business information and marketing management firm. In 1996, D&amp;B then split the Nielsen branch of the company into Nielsen Media Research, which focused on television ratings, and A. C. Nielsen, which focused on consumer buying and entertainment viewing trends. Three years later the Dutch publishing company VNU purchased Nielsen Media Research and shortly thereafter acquired A. C. Nielsen. The two Nielsen businesses were combined and renamed the Nielsen Company in 2007. In January 2011, the Nielsen Company issued an Initial Public Offering (IPO) on the <related-article related-article-type="rs" xlink:href="89551008" xlink:type="simple">New York Stock Exchange (NYSE)</related-article>, raising almost $2 billion. By 2014, the Nielsen Company studied and reported on consumer buying and viewing trends in over one hundred countries worldwide.</p>
+            </sec>
+            <sec sec-type="hangindent" indexed="true">
+               <title>Bibliography</title>
+               <ref-list>
+                  <ref>
+                     <citation citation-type="booksimple" xlink:type="simple">Buzzard, Karen.
+                <italic>Chains of Gold: Marketing the Ratings and Rating the Markets</italic>.
+                Metuchen, N.J.: Scarecrow Press, 1990.</citation>
+                  </ref>
+                  <ref>
+                     <citation citation-type="journal" xlink:type="simple">Carter, Bill. "A. C. Nielsen Jr., Who Built Ratings Firm, Dies at 92." <italic>New York Times</italic> 5 Oct. 2011: B13. Print </citation>
+                  </ref>
+                  <ref>
+                     <citation citation-type="booksimple" xlink:type="simple">Newcomb, Horace, ed. "A. C. Nielsen Company: Media Market Research Firm." <italic>Encyclopedia of Television</italic>. 4 vols. New York: Routledge, 2014. 10–12. Print.</citation>
+                  </ref>
+                  <ref>
+                     <citation citation-type="booksimple" xlink:type="simple">Newcomb, Horace, ed. "Nielsen, A. C. (1897–1980)." <italic>Encyclopedia of Television</italic>. 4 vols. New York: Routledge, 2014. 1661–62. Print.</citation>
+                  </ref>
+                  <ref>
+                     <citation citation-type="journal" xlink:type="simple">Selby, Shawn. "Nielsen and the Networks: Scientific Capitalism, Broadcasting, and Congress, 1956–1958." <italic>Historical Journal of Film, Radio, and Television</italic> (2013): 1–13. Print. </citation>
+                  </ref>
+                  <ref>
+                     <citation citation-type="website" xlink:type="simple">"VNU to Change Name." <italic>New York Times</italic>. New York Times, 19 Jan. 2007. Web. 15 Aug. 2014.</citation>
+                  </ref>
+                  <ref>
+                     <citation citation-type="booksimple" xlink:type="simple">Webster, James G., Patricia
+                F. Phalen, and Lawrence W. Lichty. <italic>Ratings Analysis: The Theory and Practice
+                of Audience Research</italic>. 3d ed. Mahwah, N.J.: L. Erlbaum Associates,
+                2006.</citation>
+                  </ref>
+               </ref-list>
+            </sec>
+            <sec sec-type="rs_citation" indexed="true">
+               <title/>
+               <ref-list>
+                  <ref>
+                     <citation citation-type="original" xlink:type="simple">
+                        <article-title>A. C. Nielsen
+                Company</article-title>
+                        <italic>The Twenties in America</italic>
+                        <person-group person-group-type="editor">
+                           <name name-style="western">
+                              <given-names>Carl</given-names>
+                              <x xml:space="preserve"> </x>
+                              <surname>Rollyson</surname>
+                           </name>
+                        </person-group>
+                        <year>2012</year>
+                        <publisher-name>Salem
+                Press</publisher-name>
+                     </citation>
+                  </ref>
+               </ref-list>
+            </sec>
+         </body>
+      </book-part>
+   </body>
+</book>

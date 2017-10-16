@@ -1,0 +1,11 @@
+
+
+dependencies {
+    compile "com.jayway.jsonpath:json-path:$jsonpath_version"
+
+    compile "com.fasterxml.jackson.core:jackson-databind:$jackson_version"
+    compile "com.fasterxml.jackson.module:jackson-module-kotlin:$jackson_version"
+
+    testCompile project(':mapping-engine-xml-reader')
+
+}

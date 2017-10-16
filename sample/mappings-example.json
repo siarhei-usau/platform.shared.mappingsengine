@@ -1,0 +1,50 @@
+{
+  "id": "rs-mappings",
+  "version": "1.0.0",
+  "primaryKey": "$.book.body[0].book-part[0].book-part-meta[0].doi",
+  "mappings": [
+    {
+      "type": "rename",
+      "fromPath": "$.book.body[0].book-part[0].book-part-meta[0].book-part-id[*].value",
+      "toPath": "@..id",
+      "mode": "replace"
+    },
+    {
+      "type": "copy",
+      "fromPath": "$.book.body[0].book-part[0].book-part-meta[0].book-part-id[?(@.pub-id-type=='doi')].id",
+      "toPath": "@...doi"
+    },
+    {
+      "type": "lookup",
+      "lookupResource": "s3://bucket/prefix/lookup_w_ui.txt",
+      "filters": [
+        {
+          "lookup-field": "AN",
+          "lookup-value": "$.book[0].body[0].book-part[0].book-part-meta[0].book-part-id[0].value"
+        },
+        {
+          "lookup-field": "Type",
+          "lookup-value": ["subject", "subjectgeo"]
+        }
+      ],
+      "toPath": "$.book.front[0].article-meta[0].article-categories[0].subj-group[0]",
+      "template": {
+        "group_type": "ebsco_{{Type}}",
+        "subject": [
+          {
+            "id": "{{Term_Id}}",
+            "value": "{{Term}}"
+          }
+        ]
+      },
+      "mode": "append"
+    }
+  ],
+  "configuration": {
+    "embedLiteralXmlAtPaths": [
+      "//book[*]/body[*]/book-part[*]/book-front[*]/sec",
+      "//book[*]/body[*]/book-part[*]/body[*]/sec",
+      "//book[*]/body[*]/book-part[*]/book-part-meta[*]/abstract/p"
+    ]
+  }
+}

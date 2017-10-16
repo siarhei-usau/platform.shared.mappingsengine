@@ -1,0 +1,39 @@
+
+
+apply plugin: 'kotlin-kapt'
+apply plugin: 'distribution'
+
+
+dependencies {
+    compile project(':mapping-engine')
+    compile project(':mapping-engine-xml-reader')
+
+    compile "com.fasterxml.jackson.core:jackson-databind:$jackson_version"
+    compile "com.fasterxml.jackson.module:jackson-module-kotlin:$jackson_version"
+
+    compile "com.streamsets:streamsets-datacollector-sdk:$streamsets_sdk_version"
+
+    compileOnly "com.streamsets:streamsets-datacollector-api:$streamsets_api_version"
+    compileOnly "org.slf4j:slf4j-api:$slf4j_version"
+
+    kapt "com.streamsets:streamsets-datacollector-api:$streamsets_api_version"
+
+    testCompile "com.streamsets:streamsets-datacollector-api:$streamsets_api_version"
+    testCompile "com.streamsets:streamsets-datacollector-sdk:$streamsets_sdk_version"
+    testCompile "com.streamsets:streamsets-datacollector-spark-api:$streamsets_sdk_version"
+
+    // it is already bound to slf4j-log4j testRuntime "ch.qos.logback:logback-classic:$logback_version"
+
+}
+
+distributions {
+    main {
+        contents {
+            into('lib') {
+                from jar
+                from(project.configurations.runtime)
+            }
+        }
+    }
+}
+

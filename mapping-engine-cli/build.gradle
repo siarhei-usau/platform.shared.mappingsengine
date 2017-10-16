@@ -1,0 +1,10 @@
+apply plugin: "application"
+
+mainClassName = "com.ebsco.platform.shared.mappingsengine.cli.MappingEngineCliApp"
+
+dependencies {
+    compile project(':mapping-engine')
+    compile project(':mapping-engine-xml-reader')
+
+    compile group: 'com.github.rvesse', name: 'airline', version: version_airline
+}
