@@ -478,13 +478,13 @@ found was `$.b.c[1].d[2].e.f` then the target path would resolve to base path `$
 
 ## Project Architecture
 
-The Mappings Engine is broken into 4 code moduels:
+The Mappings Engine is broken into 4 code modules:
 
 |module|description|
 |------|-----------|
 |mappings-engine-xml-reader|stand-alone module that converts XML to JSON with a few configurable adjustments including setting which paths are allowed to have embedded tags (which will be retained as text), which nodes should enforce single value, and which nodes can elevate their text node up to the parent.  This builds a JSON object in memory using a provided JsonProvider, which defaults to Jackson.  This is well covered by unit tests, but has not been tested against malformed documents.|
 |mapping-engine|Runs a series of transforms on the JSON object in memory using JsonPath that accesses the JSON document via a JsonProvider. This includes a custom target pathing library to allow for transformations to a document from relative paths (relative to the queried nodes).  See the `PathUtils` and `TestPathUtils` for more on this topic, as it is the key to how transformers can apply changes. |
-|mapping-engine-cli|A basic testing tool that runs a single intput file and outputs JSON to screen and optionally to a file.|
+|mapping-engine-cli|A basic testing tool that runs a single input file and outputs JSON to screen and optionally to a file.|
 |mapping-engine-streamsets-plugin|A StreamSets plugin that incorporates the xml reader and mappings engine to transform XML into JSON while applying the mappings.  It reads from an XML from either a text field or StreamSets `fileRef` and writes JSON back to another text field.  This results of this can be parsed into a record using StreamSets JsonParserProcessor or used as-is as text to pass it to another system.|
 
 
