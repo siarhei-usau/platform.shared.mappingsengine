@@ -143,16 +143,10 @@ class TestTransforms: BasePathTest() {
                                                                { "name": "Boulder", "cityState": "Boulder, Colorado" }] , ...] }
          */
 
-        // TODO: we are at name, so pop up to states[*] is error
-        //      @^states[*].cities[*]+stateName
-        // instead of error, allow popping up to an array
 
-        // TODO: other error, $.states[*].name resolves to $.states[0].name so we can't absolute path and get prefix match
-        //       do we want to strip off attributes and leave only objects/arrays so that prefix matching can work?  yes
+        // TODO: this is failing until TestPathUtils all pass, one case is broken there, see testCasesFailingFromConcatTesting()
 
-        // TODO: add above cases to the PathUtils tests
-
-        CopyJsonTransform("$.states[*].name", "$.states[*].cities[*]+stateName").apply(context)
+        CopyJsonTransform("$.states[*].name", "$^states[*]+cities[*].stateName").apply(context)
         printJson(context.jsonObject, "After Copy")
 
         val fromPaths = listOf("$.states[*].cities[*].name", "$.states[*].cities[*].stateName")

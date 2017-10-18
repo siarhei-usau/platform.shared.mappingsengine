@@ -1,13 +1,10 @@
 package com.ebsco.platform.shared.mappingsengine.core
 
-import com.jayway.jsonpath.Configuration
 import com.jayway.jsonpath.JsonPath
-import com.jayway.jsonpath.Option
-import com.jayway.jsonpath.spi.json.JacksonJsonProvider
 import org.junit.Test
 import kotlin.test.assertEquals
 
-class TestPathUtils: BasePathTest() {
+class TestPathUtils : BasePathTest() {
 
     @Test
     fun testAbsolutePathResolution() {
@@ -81,6 +78,162 @@ class TestPathUtils: BasePathTest() {
 
     }
 
+    @Test
+    fun testRelativePath_from_property() {
+        val queryPath = "$.a.b[*].c.d.e"
+        val matchingPaths: List<String> = jpathCtx.read(queryPath)
+
+        val goNowhere = "@" // stay in e
+        assertEquals(listOf(
+                ResolvedPaths("$['a']['b'][0]['c']['d']['e']", "$['a']['b'][0]['c']['d']['e']", ""),
+                ResolvedPaths("$['a']['b'][1]['c']['d']['e']", "$['a']['b'][1]['c']['d']['e']", "")),
+                jpathCtx.resolveTargetPaths(goNowhere, matchingPaths))
+
+        val goUpOne = "@^d" // up to d
+        assertEquals(listOf(
+                ResolvedPaths("$['a']['b'][0]['c']['d']['e']", "$['a']['b'][0]['c']['d']", ""),
+                ResolvedPaths("$['a']['b'][1]['c']['d']['e']", "$['a']['b'][1]['c']['d']", "")),
+                jpathCtx.resolveTargetPaths(goUpOne, matchingPaths))
+
+        val insertionPointAtSameLevel = "@^d+e2" // up to 'd', add new property
+        val insertionPoints = jpathCtx.resolveTargetPaths(insertionPointAtSameLevel, matchingPaths)
+
+        assertEquals(listOf(
+                ResolvedPaths("$['a']['b'][0]['c']['d']['e']", "$['a']['b'][0]['c']['d']", "e2"),
+                ResolvedPaths("$['a']['b'][1]['c']['d']['e']", "$['a']['b'][1]['c']['d']", "e2")),
+                insertionPoints)
+
+        // add new item so later reference to it works
+        insertionPoints.forEachIndexed { idx, oneInsert ->
+            jpathCtx.applyUpdatePath(oneInsert.targetBasePath, oneInsert.targetUpdatePath, "abc$idx")
+        }
+
+        val refPropertyAtSameLevel = "@^d.e2" // up to 'd', reference other property
+        assertEquals(listOf(
+                ResolvedPaths("$['a']['b'][0]['c']['d']['e']", "$['a']['b'][0]['c']['d']['e2']", ""),
+                ResolvedPaths("$['a']['b'][1]['c']['d']['e']", "$['a']['b'][1]['c']['d']['e2']", "")),
+                jpathCtx.resolveTargetPaths(refPropertyAtSameLevel, matchingPaths))
+
+    }
+
+    @Test
+    fun testRelativePath_from_map() {
+        val queryPath = "$.a.b[*].c.d"
+        val matchingPaths: List<String> = jpathCtx.read(queryPath)
+
+        val goNowhere = "@" // stay in 'd'
+        assertEquals(listOf(
+                ResolvedPaths("$['a']['b'][0]['c']['d']", "$['a']['b'][0]['c']['d']", ""),
+                ResolvedPaths("$['a']['b'][1]['c']['d']", "$['a']['b'][1]['c']['d']", "")),
+                jpathCtx.resolveTargetPaths(goNowhere, matchingPaths))
+
+        val goUpOne = "@^c" // up to 'c'
+        assertEquals(listOf(
+                ResolvedPaths("$['a']['b'][0]['c']['d']", "$['a']['b'][0]['c']", ""),
+                ResolvedPaths("$['a']['b'][1]['c']['d']", "$['a']['b'][1]['c']", "")),
+                jpathCtx.resolveTargetPaths(goUpOne, matchingPaths))
+
+        val insertionPointAtSameLevel = "@+e2" // stay in 'd', add new property
+        val insertionPoints = jpathCtx.resolveTargetPaths(insertionPointAtSameLevel, matchingPaths)
+        assertEquals(listOf(
+                ResolvedPaths("$['a']['b'][0]['c']['d']", "$['a']['b'][0]['c']['d']", "e2"),
+                ResolvedPaths("$['a']['b'][1]['c']['d']", "$['a']['b'][1]['c']['d']", "e2")),
+                insertionPoints)
+
+        // add new item so later reference to it works
+        insertionPoints.forEachIndexed { idx, oneInsert ->
+            jpathCtx.applyUpdatePath(oneInsert.targetBasePath, oneInsert.targetUpdatePath, "abc$idx")
+        }
+
+        val refPropertyAtSameLevel = "@.e2" // stay in 'd', reference other property
+        assertEquals(listOf(
+                ResolvedPaths("$['a']['b'][0]['c']['d']", "$['a']['b'][0]['c']['d']['e2']", ""),
+                ResolvedPaths("$['a']['b'][1]['c']['d']", "$['a']['b'][1]['c']['d']['e2']", "")),
+                jpathCtx.resolveTargetPaths(refPropertyAtSameLevel, matchingPaths))
+
+    }
+
+    @Test
+    fun testRelativePath_from_whole_array() {
+        val queryPath = "$.a.b"
+        val matchingPaths: List<String> = jpathCtx.read(queryPath)
+
+        val sameObject = "@" // stay in 'b'
+        assertEquals(listOf(ResolvedPaths("$['a']['b']", "$['a']['b']", "")),
+                jpathCtx.resolveTargetPaths(sameObject, matchingPaths))
+
+        val goUpOne = "@^a" // go up to 'a'
+        assertEquals(listOf(ResolvedPaths("$['a']['b']", "$['a']", "")),
+                jpathCtx.resolveTargetPaths(goUpOne, matchingPaths))
+
+        val refIndexAtSameLevel = "@[1]" // stay in 'b' but specific index
+        assertEquals(listOf(ResolvedPaths("$['a']['b']", "$['a']['b'][1]", "")),
+                jpathCtx.resolveTargetPaths(refIndexAtSameLevel, matchingPaths))
+
+        val insertionPointAtSameLevel = "@+[+]" // stay in 'b' but add new item
+        assertEquals(listOf(ResolvedPaths("$['a']['b']", "$['a']", "b[+]")),
+                jpathCtx.resolveTargetPaths(insertionPointAtSameLevel, matchingPaths))
+    }
+
+
+    @Test
+    fun testRelativePath_from_indexed_item_in_array() {
+        val queryPath = "$.a.b[0]"
+        val matchingPaths: List<String> = jpathCtx.read(queryPath)
+
+        val sameObject = "@" // stay in 'b[0]'
+        assertEquals(listOf(ResolvedPaths("$['a']['b'][0]", "$['a']['b'][0]", "")),
+                jpathCtx.resolveTargetPaths(sameObject, matchingPaths))
+
+        val goUpOne = "@^b" // go up to 'b'
+        assertEquals(listOf(ResolvedPaths("$['a']['b'][0]", "$['a']['b']", "")),
+                jpathCtx.resolveTargetPaths(goUpOne, matchingPaths))
+
+        val refIndexAtSameLevel = "@^b[1]" // stay in 'b' then down to specific index
+        assertEquals(listOf(ResolvedPaths("$['a']['b']", "$['a']['b'][1]", "")),
+                jpathCtx.resolveTargetPaths(refIndexAtSameLevel, matchingPaths))
+
+
+        val insertionPointAtSameLevel = "@^b+[+]" // up to 'b' and add new item
+        assertEquals(listOf(ResolvedPaths("$['a']['b']", "$['a']", "b[+]")),
+                jpathCtx.resolveTargetPaths(insertionPointAtSameLevel, matchingPaths))
+
+        val insertInSameArray = "@^a+b[+]" // round about way to stay stay in 'b', add new item
+        assertEquals(listOf(
+                ResolvedPaths("$['a']['b'][0]", "$['a']['b']", "[+]")),
+                jpathCtx.resolveTargetPaths(insertInSameArray, matchingPaths))
+
+
+    }
+
+    @Test
+    fun testCasesFailingFromConcatTesting() {
+        val queryPath = "$.states[*].name"
+
+        val relativePath = "@^states[*]+cities[*].stateName" // go up from name to states[x] down to all cities, and add stateName
+        val absolutePath = "$.states[*]+cities[*].stateName" // prefix match into states[x], then down to all cities, and add stateName
+
+        val popTooFar = "@^states"
+
+        val matchingPaths: List<String> = jpathCtx.read(queryPath)
+
+        assertEquals(listOf(
+                ResolvedPaths("$['states'][0]['name']", "$['states'][0]", "cities[*].stateName"),
+                ResolvedPaths("$['states'][1]['name']", "$['states'][1]", "cities[*].stateName")),
+                jpathCtx.resolveTargetPaths(relativePath, matchingPaths))
+
+        assertEquals(listOf(
+                ResolvedPaths("$['states'][0]['name']", "$['states'][0]", "cities[*].stateName"),
+                ResolvedPaths("$['states'][1]['name']", "$['states'][1]", "cities[*].stateName")),
+                jpathCtx.resolveTargetPaths(absolutePath, matchingPaths))
+
+
+        assertEquals(listOf(
+                ResolvedPaths("$['states'][0]['name']", "$['states']", ""),
+                ResolvedPaths("$['states'][1]['name']", "$['states']", "")),
+                jpathCtx.resolveTargetPaths(popTooFar, matchingPaths))
+    }
+
 
     @Test
     fun testUpdates() {
@@ -97,7 +250,7 @@ class TestPathUtils: BasePathTest() {
         assertEquals("HOWDY!", checkInsert)
 
         val insertionPointAtSameLevel = "@^c.d+e2"
-        val insertionInfoAtSameLevel =  jpathCtx.resolveTargetPaths(insertionPointAtSameLevel, matchingPaths)
+        val insertionInfoAtSameLevel = jpathCtx.resolveTargetPaths(insertionPointAtSameLevel, matchingPaths)
         insertionInfoAtSameLevel.forEach { (_, basePath, updatePath) ->
             jpathCtx.applyUpdatePath(basePath, updatePath, "HOWDY!")
         }
