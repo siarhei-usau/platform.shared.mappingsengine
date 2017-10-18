@@ -7,22 +7,7 @@ import com.jayway.jsonpath.spi.json.JacksonJsonProvider
 import org.junit.Test
 import kotlin.test.assertEquals
 
-class TestPathUtils {
-    val json = """{ "a": { "b": [ { "c": { "d": { "e": "foo" } }, "something": "bar" }, { "c": { "d": { "e": "miss" } } } ] } }"""
-
-    val jpathPaths = Configuration.builder()
-            .options(Option.AS_PATH_LIST, Option.SUPPRESS_EXCEPTIONS)
-            .jsonProvider(JacksonJsonProvider())
-            .build()
-            .let { JsonPath.using(it) }
-
-    val jpathCtx = jpathPaths.parse(json)
-
-    val jpathValues = Configuration.builder()
-            .options(Option.SUPPRESS_EXCEPTIONS)
-            .options(Option.ALWAYS_RETURN_LIST)
-            .jsonProvider(JacksonJsonProvider())
-            .build()
+class TestPathUtils: BasePathTest() {
 
     @Test
     fun testAbsolutePathResolution() {
@@ -32,15 +17,15 @@ class TestPathUtils {
         val matchingPaths: List<String> = jpathCtx.read(queryPath)
 
         val insertionPoint = "$.a.b[*]+somethingNew"
-        assertEquals(listOf(Triple("$['a']['b'][0]['c']['d']", "$['a']['b'][0]", "somethingNew")),
+        assertEquals(listOf(ResolvedPaths("$['a']['b'][0]['c']['d']", "$['a']['b'][0]", "somethingNew")),
                 jpathCtx.resolveTargetPaths(insertionPoint, matchingPaths))
 
         val insertionPointAtSameLevel = "$.a.b[*].c.d+e2"
-        assertEquals(listOf(Triple("$['a']['b'][0]['c']['d']", "$['a']['b'][0]['c']['d']", "e2")),
+        assertEquals(listOf(ResolvedPaths("$['a']['b'][0]['c']['d']", "$['a']['b'][0]['c']['d']", "e2")),
                 jpathCtx.resolveTargetPaths(insertionPointAtSameLevel, matchingPaths))
 
         val replacementPoint = "$.a.b[*].c.d.e"
-        assertEquals(listOf(Triple("$['a']['b'][0]['c']['d']", "$['a']['b'][0]['c']['d']['e']", "")),
+        assertEquals(listOf(ResolvedPaths("$['a']['b'][0]['c']['d']", "$['a']['b'][0]['c']['d']['e']", "")),
                 jpathCtx.resolveTargetPaths(replacementPoint, matchingPaths))
     }
 
@@ -52,25 +37,25 @@ class TestPathUtils {
         val insertionPoint = "@.c.d+e"
 
         assertEquals(listOf(
-                Triple("\$['a']['b'][0]", "\$['a']['b'][0]['c']['d']", "e"),
-                Triple("\$['a']['b'][1]", "\$['a']['b'][1]['c']['d']", "e")),
+                ResolvedPaths("\$['a']['b'][0]", "\$['a']['b'][0]['c']['d']", "e"),
+                ResolvedPaths("\$['a']['b'][1]", "\$['a']['b'][1]['c']['d']", "e")),
                 jpathCtx.resolveTargetPaths(insertionPoint, matchingPaths))
 
         val replacementPoint = "@.c.d.e"
         assertEquals(listOf(
-                Triple("\$['a']['b'][0]", "\$['a']['b'][0]['c']['d']['e']", ""),
-                Triple("\$['a']['b'][1]", "\$['a']['b'][1]['c']['d']['e']", "")),
+                ResolvedPaths("\$['a']['b'][0]", "\$['a']['b'][0]['c']['d']['e']", ""),
+                ResolvedPaths("\$['a']['b'][1]", "\$['a']['b'][1]['c']['d']['e']", "")),
                 jpathCtx.resolveTargetPaths(replacementPoint, matchingPaths))
 
         val queryPath2 = "$.a.b[*].c.d[?(@.e == 'foo')]"
         val matchingPaths2: List<String> = jpathCtx.read(queryPath2)
 
         val replacementPoint2 = "@.e"
-        assertEquals(listOf(Triple("$['a']['b'][0]['c']['d']", "$['a']['b'][0]['c']['d']['e']", "")),
+        assertEquals(listOf(ResolvedPaths("$['a']['b'][0]['c']['d']", "$['a']['b'][0]['c']['d']['e']", "")),
                 jpathCtx.resolveTargetPaths(replacementPoint2, matchingPaths2))
 
         val insertionPoint2 = "@+e2"
-        assertEquals(listOf(Triple("$['a']['b'][0]['c']['d']", "$['a']['b'][0]['c']['d']", "e2")),
+        assertEquals(listOf(ResolvedPaths("$['a']['b'][0]['c']['d']", "$['a']['b'][0]['c']['d']", "e2")),
                 jpathCtx.resolveTargetPaths(insertionPoint2, matchingPaths2))
     }
 
@@ -80,15 +65,15 @@ class TestPathUtils {
         val matchingPaths: List<String> = jpathCtx.read(queryPath)
 
         val insertionPoint = "@^c^b+somethingNew"
-        assertEquals(listOf(Triple("$['a']['b'][0]['c']['d']", "$['a']['b'][0]", "somethingNew")),
+        assertEquals(listOf(ResolvedPaths("$['a']['b'][0]['c']['d']", "$['a']['b'][0]", "somethingNew")),
                 jpathCtx.resolveTargetPaths(insertionPoint, matchingPaths))
 
         val insertionPointAtSameLevel = "@^c.d+e2"
-        assertEquals(listOf(Triple("$['a']['b'][0]['c']['d']", "$['a']['b'][0]['c']['d']", "e2")),
+        assertEquals(listOf(ResolvedPaths("$['a']['b'][0]['c']['d']", "$['a']['b'][0]['c']['d']", "e2")),
                 jpathCtx.resolveTargetPaths(insertionPointAtSameLevel, matchingPaths))
 
         val replacementPoint = "@^c.d.e"
-        assertEquals(listOf(Triple("$['a']['b'][0]['c']['d']", "$['a']['b'][0]['c']['d']['e']", "")),
+        assertEquals(listOf(ResolvedPaths("$['a']['b'][0]['c']['d']", "$['a']['b'][0]['c']['d']['e']", "")),
                 jpathCtx.resolveTargetPaths(replacementPoint, matchingPaths))
 
         // TODO not supporting deep bump up
@@ -108,7 +93,7 @@ class TestPathUtils {
             jpathCtx.applyUpdatePath(basePath, updatePath, "HOWDY!")
         }
 
-        val checkInsert: String = JsonPath.compile("$.a.b[0].somethingNew").read<List<String>>(jpathCtx.json<Any>(), jpathValues).first()
+        val checkInsert: String = JsonPath.compile("$.a.b[0].somethingNew").read<List<String>>(jpathCtx.json<Any>(), jvalueListConfig).first()
         assertEquals("HOWDY!", checkInsert)
 
         val insertionPointAtSameLevel = "@^c.d+e2"
@@ -117,7 +102,7 @@ class TestPathUtils {
             jpathCtx.applyUpdatePath(basePath, updatePath, "HOWDY!")
         }
 
-        val checkInsert2: String = JsonPath.compile("$.a.b[0].c.d.e2").read<List<String>>(jpathCtx.json<Any>(), jpathValues).first()
+        val checkInsert2: String = JsonPath.compile("$.a.b[0].c.d.e2").read<List<String>>(jpathCtx.json<Any>(), jvalueListConfig).first()
         assertEquals("HOWDY!", checkInsert2)
 
 
@@ -127,7 +112,7 @@ class TestPathUtils {
             jpathCtx.applyUpdatePath(basePath, updatePath, "HOWDY!")
         }
 
-        val checkInsert3: String = JsonPath.compile("$.a.b[0].c.d.e").read<List<String>>(jpathCtx.json<Any>(), jpathValues).first()
+        val checkInsert3: String = JsonPath.compile("$.a.b[0].c.d.e").read<List<String>>(jpathCtx.json<Any>(), jvalueListConfig).first()
         assertEquals("HOWDY!", checkInsert3)
 
         val insertionPointNewArray = "@^c^b+newArray[+].value1"
@@ -141,9 +126,9 @@ class TestPathUtils {
         insertionInfoNewArray2.forEach { (_, basePath, updatePath) ->
             jpathCtx.applyUpdatePath(basePath, updatePath, "HOWDY 2")
         }
-        val checkInsertInNewArray1: String = JsonPath.compile("$.a.b[0].newArray[0].value1").read<List<String>>(jpathCtx.json<Any>(), jpathValues).first()
+        val checkInsertInNewArray1: String = JsonPath.compile("$.a.b[0].newArray[0].value1").read<List<String>>(jpathCtx.json<Any>(), jvalueListConfig).first()
         assertEquals("HOWDY 1", checkInsertInNewArray1)
-        val checkInsertInNewArray2: String = JsonPath.compile("$.a.b[0].newArray[0].value2").read<List<String>>(jpathCtx.json<Any>(), jpathValues).first()
+        val checkInsertInNewArray2: String = JsonPath.compile("$.a.b[0].newArray[0].value2").read<List<String>>(jpathCtx.json<Any>(), jvalueListConfig).first()
         assertEquals("HOWDY 2", checkInsertInNewArray2)
     }
 

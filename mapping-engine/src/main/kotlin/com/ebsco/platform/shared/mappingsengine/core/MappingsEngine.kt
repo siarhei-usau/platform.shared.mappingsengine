@@ -15,14 +15,20 @@ class MappingsEngine(val config: MappingsEngineConfig = MappingsEngineConfig.DEF
             .jsonProvider(config.jsonProvider)
             .build()
 
-    private val jsonValues = Configuration.builder()
+    private val jsonValueList = Configuration.builder()
+            .options(Option.ALWAYS_RETURN_LIST, Option.SUPPRESS_EXCEPTIONS)
+            .jsonProvider(config.jsonProvider)
+            .build()
+
+    private val jsonValue = Configuration.builder()
             .options(Option.ALWAYS_RETURN_LIST, Option.SUPPRESS_EXCEPTIONS)
             .jsonProvider(config.jsonProvider)
             .build()
 
     fun processDocument(jsonDocument: Any) {
+        val context = JsonTransformerContext(jsonDocument, jsonPaths, jsonValue, jsonValueList)
         config.transformers.forEach { tx ->
-            tx.apply(jsonDocument, jsonPaths, jsonValues)
+            tx.apply(context)
         }
     }
 }

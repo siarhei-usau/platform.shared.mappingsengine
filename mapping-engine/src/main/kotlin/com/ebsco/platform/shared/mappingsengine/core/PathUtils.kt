@@ -5,6 +5,8 @@ import com.jayway.jsonpath.DocumentContext
 import com.jayway.jsonpath.JsonPath
 import com.jayway.jsonpath.Option
 
+data class ResolvedPaths(val sourcePath: String, val targetBasePath: String, val targetUpdatePath: String)
+
 /**
  * Target Pathing:  resolving relative insertion paths.
  *
@@ -46,7 +48,7 @@ import com.jayway.jsonpath.Option
  * the left of the marker to indicate a query for a path that already exists.
  *
  */
-fun DocumentContext.resolveTargetPaths(targetPath: String, matchingPaths: List<String>): List<Triple<String, String, String>> {
+fun DocumentContext.resolveTargetPaths(targetPath: String, matchingPaths: List<String>, allowNoMatchingTarget: Boolean = false): List<ResolvedPaths> {
     val tempConfig = Configuration.builder()
             .options(Option.SUPPRESS_EXCEPTIONS)
             .options(Option.AS_PATH_LIST)
@@ -173,11 +175,11 @@ fun DocumentContext.resolveTargetPaths(targetPath: String, matchingPaths: List<S
     }
 
     val matchingPathsMissing = correlatedMatchWithTarget.filter { it.second == null }
-    if (matchingPathsMissing.isNotEmpty()) {
+    if (!allowNoMatchingTarget && matchingPathsMissing.isNotEmpty()) {
         throw IllegalStateException("Some source paths cannot be related to a root existing path: ${matchingPathsMissing}")
     }
 
-    return correlatedMatchWithTarget.map { Triple(it.first, it.second!!, updatePath) }
+    return correlatedMatchWithTarget.map { ResolvedPaths(it.first, it.second ?: "", updatePath) }
 }
 
 fun DocumentContext.applyUpdatePath(basePath: String, updatePath: String, jsonFragment: Any) {
