@@ -145,7 +145,13 @@ class TestTransforms: BasePathTest() {
 
         // TODO: we are at name, so pop up to states[*] is error
         //      @^states[*].cities[*]+stateName
-        // allow popping up to an array
+        // instead of error, allow popping up to an array
+
+        // TODO: other error, $.states[*].name resolves to $.states[0].name so we can't absolute path and get prefix match
+        //       do we want to strip off attributes and leave only objects/arrays so that prefix matching can work?  yes
+
+        // TODO: add above cases to the PathUtils tests
+
         CopyJsonTransform("$.states[*].name", "$.states[*].cities[*]+stateName").apply(context)
         printJson(context.jsonObject, "After Copy")
 
