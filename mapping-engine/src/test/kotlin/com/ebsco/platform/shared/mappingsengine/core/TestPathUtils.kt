@@ -171,8 +171,11 @@ class TestPathUtils : BasePathTest() {
                 jpathCtx.resolveTargetPaths(refIndexAtSameLevel, matchingPaths))
 
         val insertionPointAtSameLevel = "@+[+]" // stay in 'b' but add new item
-        assertEquals(listOf(ResolvedPaths("$['a']['b']", "$['a']", "b[+]")),
-                jpathCtx.resolveTargetPaths(insertionPointAtSameLevel, matchingPaths))
+        val insertionInfo = jpathCtx.resolveTargetPaths(insertionPointAtSameLevel, matchingPaths)
+        assertEquals(listOf(ResolvedPaths("$['a']['b']", "$['a']['b']", "[+]")),
+                insertionInfo)
+
+        jpathCtx.applyUpdatePath(insertionInfo.first().targetBasePath, insertionInfo.first().targetUpdatePath, "whatever")
     }
 
 
@@ -190,20 +193,43 @@ class TestPathUtils : BasePathTest() {
                 jpathCtx.resolveTargetPaths(goUpOne, matchingPaths))
 
         val refIndexAtSameLevel = "@^b[1]" // stay in 'b' then down to specific index
-        assertEquals(listOf(ResolvedPaths("$['a']['b']", "$['a']['b'][1]", "")),
+        assertEquals(listOf(ResolvedPaths("$['a']['b'][0]", "$['a']['b'][1]", "")),
                 jpathCtx.resolveTargetPaths(refIndexAtSameLevel, matchingPaths))
 
 
         val insertionPointAtSameLevel = "@^b+[+]" // up to 'b' and add new item
-        assertEquals(listOf(ResolvedPaths("$['a']['b']", "$['a']", "b[+]")),
+        assertEquals(listOf(ResolvedPaths("$['a']['b'][0]", "$['a']['b']", "[+]")),
                 jpathCtx.resolveTargetPaths(insertionPointAtSameLevel, matchingPaths))
 
-        val insertInSameArray = "@^a+b[+]" // round about way to stay stay in 'b', add new item
+        val insertInSameArray = "@^b^a+b[+]" // round about way to stay stay in 'b', add new item
         assertEquals(listOf(
-                ResolvedPaths("$['a']['b'][0]", "$['a']['b']", "[+]")),
+                ResolvedPaths("$['a']['b'][0]", "$['a']", "b[+]")),
                 jpathCtx.resolveTargetPaths(insertInSameArray, matchingPaths))
 
 
+        // TODO: it isn't clear pathing through array items:
+        //    start at: a.b[0].c.d[1].e
+        //    @^d        goes to d[1]
+        //    @^d^d      goes to d the array itself
+        //    @^d^c      goes to c, but didn't have to go through the array item
+        //    @^d^c^b    goes to b[0]
+        //  etc.
+        //
+        //  this is a little confusing.  We need the ability to do either, or is it really only the item in the array that
+        //  we care about and not the array itself?  We can say it is the item unless you add [] for some insert directive
+        //  then it is the array.
+        //
+        //  So this would change the above to:
+        //
+        //  @^d          goes to d[1]
+        //  @^d+[+]      goes to d to add an array item
+        //  @^d[0]       goes to array item d[0]
+        //  @^d^c^b      goes to b[0]
+        //  @^d^c^b+[*]  goes to b to update all items in the array
+        //
+        //  Therefore the rule is simple:  up paths go to the item in the array, down paths can go to the array itself
+        //
+        // TODO: change all test cases to match this, and remove these comments.
     }
 
     @Test

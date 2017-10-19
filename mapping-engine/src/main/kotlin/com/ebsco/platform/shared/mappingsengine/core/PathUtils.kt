@@ -105,8 +105,14 @@ fun DocumentContext.resolveTargetPaths(targetPath: String, matchingPaths: List<S
                 throw IllegalArgumentException("Relative path $targetPath must have ^ as second character and all ^ before the first .")
             }
 
-            val upwardsParts = existingPath.substring(2).substringBefore(".").split('^')
-            val downwardsPart = existingPath.substringAfter(".", "")
+            val startingPath = existingPath.substring(2)
+
+            // a . or [] starts downwards again
+
+            val earliestDownSymbol = startingPath.indexOfAny(charArrayOf('.','['))
+
+            val upwardsParts = (if (earliestDownSymbol >= 0) startingPath.substring(0, earliestDownSymbol) else startingPath).split('^')
+            val downwardsPart = if (earliestDownSymbol >= 0) startingPath.substring(earliestDownSymbol).removePrefix(".") else ""
 
             // go up for each path for each upward part
             val uppedPaths = matchingPaths.map { matchPath ->
@@ -154,9 +160,9 @@ fun DocumentContext.resolveTargetPaths(targetPath: String, matchingPaths: List<S
                 temp
             }
         } else {
-            if (existingPath[1] != '.') throw IllegalStateException("Expected '.' as second char in @ relative path, $targetPath")
+            if (existingPath[1] != '.' && existingPath[1] != '[') throw IllegalStateException("Expected '.' or `[` as second char in @ relative path, $targetPath")
             // current node and down
-            val downwardIsEasy = matchingPaths.map { Pair(it, "$it.${existingPath.substring(2)}") }
+            val downwardIsEasy = matchingPaths.map { Pair(it, "$it${existingPath.substring(1)}") }
             val temp = downwardIsEasy.map { (matchPath, testPath) ->
                 val existingCompiled = JsonPath.compile(testPath)
                 val existingPrefixes: List<String> = existingCompiled.read(this.json<Any>(), tempConfig)
@@ -214,11 +220,17 @@ fun DocumentContext.applyUpdatePath(basePath: String, updatePath: String, jsonFr
             while (steppy.hasNext()) {
                 val (step, last) = steppy.next()
 
-                val id = step.substringBefore('[')
+                val id = if (step.startsWith('[')) "" else step.substringBefore('[')
                 val idx = step.substringAfter('[', "").removeSuffix("]")
 
-                if (!JSON.isMap(node)) throw IllegalStateException("Update pathing through $id from $baseNode / $updatePath found something other than a Map at $id")
+                val silentArrayIndex = id.isBlank() && idx.isNotBlank()
 
+                if (silentArrayIndex && !JSON.isArray(node)) {
+                    throw IllegalStateException("Update pathing through [$idx] from $baseNode / $updatePath found something other than an Array at current point")
+                }
+                if (!silentArrayIndex && !JSON.isMap(node)) {
+                    throw IllegalStateException("Update pathing through $id from $baseNode / $updatePath found something other than a Map at $id")
+                }
 
                 if (idx.isBlank()) {
                     // map or property
@@ -232,8 +244,7 @@ fun DocumentContext.applyUpdatePath(basePath: String, updatePath: String, jsonFr
                         }
                     }
                 } else {
-                    val arrayNodeExists = id in JSON.getPropertyKeys(node)
-                    val checkArrayNode = if (arrayNodeExists) JSON.getMapValue(node, id) else null
+                    val checkArrayNode = if (silentArrayIndex) node else if (id in JSON.getPropertyKeys(node)) JSON.getMapValue(node, id) else null
                     if ((checkArrayNode == null && (idx == "*" || idx == "0"))
                             || (checkArrayNode != null && !JSON.isArray(checkArrayNode))) {
                         // TODO: die here or let it go?  (fail silently?)
