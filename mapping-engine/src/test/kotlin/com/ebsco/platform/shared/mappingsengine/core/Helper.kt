@@ -31,11 +31,11 @@ abstract class BasePathTest {
                     "name": "Colorado",
                     "cities": [
                         {
-                           "geo": "x,y",
+                           "geo": "39.726287, −104.965486",
                            "name":"Denver"
                         },
                         {
-                           "geo": "x,y",
+                           "geo": "40.014984, -105.270546",
                            "name": "Boulder"
                         }
                     ]
@@ -44,11 +44,11 @@ abstract class BasePathTest {
                     "name": "California",
                     "cities": [
                         {
-                           "geo": "x,y",
+                           "geo": "37.7749300, -122.4194200",
                            "name":"San Francisco"
                         },
                         {
-                           "geo": "x,y",
+                           "geo": "36.974120, -122.030800",
                            "name": "Santa Cruz"
                         }
                     ]

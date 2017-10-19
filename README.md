@@ -2,6 +2,17 @@
 
 Platform - Mappings Engine
 
+## Project Architecture
+
+The Mappings Engine is broken into 4 code modules:
+
+|module|description|
+|------|-----------|
+|mappings-engine-xml-reader|stand-alone module that converts XML to JSON with a few configurable adjustments including setting which paths are allowed to have embedded tags (which will be retained as text), which nodes should enforce single value, and which nodes can elevate their text node up to the parent.  This builds a JSON object in memory using a provided JsonProvider, which defaults to Jackson.  This is well covered by unit tests, but has not been tested against malformed documents.|
+|mapping-engine|Runs a series of transforms on the JSON object in memory using JsonPath that accesses the JSON document via a JsonProvider. This includes a custom target pathing library to allow for transformations to a document from relative paths (relative to the queried nodes).  See the `PathUtils` and `TestPathUtils` for more on this topic, as it is the key to how transformers can apply changes. |
+|mapping-engine-cli|A basic testing tool that runs a single input file and outputs JSON to screen and optionally to a file.|
+|mapping-engine-streamsets-plugin|A StreamSets plugin that incorporates the xml reader and mappings engine to transform XML into JSON while applying the mappings.  It reads from an XML from either a text field or StreamSets `fileRef` and writes JSON back to another text field.  This results of this can be parsed into a record using StreamSets JsonParserProcessor or used as-is as text to pass it to another system.|
+
 ## Building
 
 To build the distributions for both StreamSets Plugin and the Test CLI, run a top level build:
@@ -125,7 +136,14 @@ The `XML2JSON Canonical Processor` can work with any source that either creates 
 or that adds the full XML as one string field, just change Raw XML Field setting to the input field
 name.  It must be of type `String` or of type `FileRef`.
 
+
 ## Mapping Instructions / Configuration
+
+see the confluence page for information about mappings configuration:
+
+https://confluence/display/entarch/,DanaInfo=confluence+Mappings+Engine+-+platform.shared.mappingsengine
+
+**DOCUMENTATION BELOW WILL BE REMOVED SHORTLY AFTER MOVING TO CONFLUENCE, AND IS OUTDATED:**
 
 Mapping instructions are a series of settings defined in a JSON file that apply transformations to the
 in memory JSON model before canonical JSON is written to the record.  There are also extra settings
@@ -184,95 +202,10 @@ as embedded XML instead of being converted to JSON.  The structure of the JSON i
 }
 ```
 
-For all instruction types, the `mergeMode` is one of:  `replace` (default) or `append`.  This can
-be omitted for `replace` as the default.
-
-The `id` and `notes` fields are mostly optional and later will be used to add MetaData into StreamSets
-logs or record attributes.  The `primaryKey` path statement is resolved last and should resolve to only 
-one value, otherwise is an error.
-
-An element designated as `jsonPath` is a normal JsonPath statement starting with `$.` from the root.  If
-a `jsonPath` is used in a target for a mapping, for example in the `toPath` setting, then it will be 
-prefixed matched against the `fromPath` and turned into a relative path downwards from any matching
-prefix.  This allows the rest of the path to work within the same array indexes for the matching prefix
-as the object on which the mapping is using as a source.
-
-An element designated as `jsonRelPath` is an expression starting with `@.` being relative to the current
-node, and each additional `.` going up one parent level.  For example, `@.foo` is field `foo` in the 
-same object as the source being copied or renamed.  But `@..foo` would be a sibling to the
-field being renamed (in its parent), and `@...foo` would be up another level and so on.
-
-An element designated as `jsonTemplate` is JSON that should be inserted at the point represented by
-`toPath` within the document, for each matching row in the lookup table.  The template can use 
-mustache style expressions based on the lookup elements matched, for example `{{Term_ID}}` would 
-substitute for the value of the `Term_ID` field from the matching record.
-
-The configuration section of the mappings instructions is for other settings relevant to how the
-mapping engine works.  The settings are:
-
-|Setting|Description|
-|-------|-----------|
-|embedLiteralXmlAtPaths|A list of XPath statements representing nodes in which their children should be retained as embeded XML and not converted to JSON.  This is done as XPath because it happens during the conversion to JSON and not after.
-
-## Details about JsonRelPath 
-
-When selecting from source paths, and writing to target paths you are using a `jsonRelPath`.  These consist of two parts:
-
-* An existing path part 
-* An update path part
-
-The parts are separated by a `+`.  The existing path must be present when calculated and compared against every source path. The
-update path optionally exists and any traversed elements can be created to make the full path complete.
-
-TODO: change raw comments below from code into full documentation...
-
-TODO: document what happens when you use an absolute `jsonRelPath` such as querying `$.b.c[*].d[*].e.f` and targeting
-`$.b.c[*]+x.y`.  In this case the common path between the two will resolve to the same objects, so if the source node
-found was `$.b.c[1].d[2].e.f` then the target path would resolve to base path `$.b.c[1]` with update part `x.y`.  
-
-```text
- * Target Pathing:  resolving relative insertion paths.
- *
- * Those starting with `@.` are relative to the found object, and use normal JSON Path Syntax to path downwards
- *          @.b.c.d.e.f
- *
- * Where any path elements must exist.  For elements that can be added if missing, a `+` replaces the `.` for the
- * point at which new paths can be created:
- *
- *          @.b.c+d.e.f
- *
- * allows `d` to be added, then `e`, and then property `f` with whatever value is being set.  Existing elements
- * are traversed instead of being inserted.
- *
- * To path upwards, use the `^` instead of the `.` and then resume downward with `.` or `+`.  For example:
- *
- *          @^y^x+d.e.f
- *
- * Would go up from the current node to a parent called `y`, its parent `x` and then allow `d` to be created and
- * so on downwards.
- *
- * A relative path through an array index, has the following behavior:  If pathing through a parent array with `[*]`
- * then the index used will be the same as that within the path of the current node.  for example, current node is:
- *
- *          $.b.c[1].d[2].e.f
- *
- * the relative path from `f` of `@^e^d[*]+z` or `@^e^d+z` would set insertion point at `$.a.c[1].d[2].z`
- *
- * An array must exist for the existing portion of the target path, or it is an invalid target. After the update
- * marker of `+` the bahavior is:
- *
- *          [*]  all indexes that match at that point are updated (but not added)
- *          [*+]  all indexes that match at that point are updated, if not present, an empty object is added
- *          [+]  a new item will be added to the array at this point regardless of contents
- *          [0]  the first item is updated (but not added)
- *          [0+] the first item is updated and if not present, an empty object added
- *
- * After the update marker `+` you can only use simple pathing, no expressions can be used.  They can be used to
- * the left of the marker to indicate a query for a path that already exists.
- *
-```
-
 ## A sample mappings instructions is as follows:
+
+**DOCUMENTATION BELOW WILL BE REMOVED SHORTLY AFTER MOVING TO CONFLUENCE, AND IS OUTDATED:**
+
 
 ```json
 {
@@ -327,6 +260,9 @@ found was `$.b.c[1].d[2].e.f` then the target path would resolve to base path `$
 ```
 
 ## Sample Converted JSON file (after XML conversion, pre-mapping)
+
+**DOCUMENTATION BELOW WILL BE REMOVED SHORTLY AFTER MOVING TO CONFLUENCE, AND IS OUTDATED:**
+
 
 ```json
 {
@@ -475,17 +411,6 @@ found was `$.b.c[1].d[2].e.f` then the target path would resolve to base path `$
   }
 }
 ```
-
-## Project Architecture
-
-The Mappings Engine is broken into 4 code modules:
-
-|module|description|
-|------|-----------|
-|mappings-engine-xml-reader|stand-alone module that converts XML to JSON with a few configurable adjustments including setting which paths are allowed to have embedded tags (which will be retained as text), which nodes should enforce single value, and which nodes can elevate their text node up to the parent.  This builds a JSON object in memory using a provided JsonProvider, which defaults to Jackson.  This is well covered by unit tests, but has not been tested against malformed documents.|
-|mapping-engine|Runs a series of transforms on the JSON object in memory using JsonPath that accesses the JSON document via a JsonProvider. This includes a custom target pathing library to allow for transformations to a document from relative paths (relative to the queried nodes).  See the `PathUtils` and `TestPathUtils` for more on this topic, as it is the key to how transformers can apply changes. |
-|mapping-engine-cli|A basic testing tool that runs a single input file and outputs JSON to screen and optionally to a file.|
-|mapping-engine-streamsets-plugin|A StreamSets plugin that incorporates the xml reader and mappings engine to transform XML into JSON while applying the mappings.  It reads from an XML from either a text field or StreamSets `fileRef` and writes JSON back to another text field.  This results of this can be parsed into a record using StreamSets JsonParserProcessor or used as-is as text to pass it to another system.|
 
 
 ## Future Work:
