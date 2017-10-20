@@ -103,6 +103,8 @@ policy for SDC to allow this plugin to access disk and other services of the hos
 Any version number changes would require this policy file to be updated to match the directory 
 name of the installed plugin.
 
+**TODO:** Create a stage library, and place in internal repo so that this can be installed via that model. 
+
 ## Using the Mapper in an SDC Pipeline
 
 _(you can import the `sample/Mappings Example.json` from this repo into SDC and then edit the settings
