@@ -1,8 +1,10 @@
 package com.ebsco.platform.shared.mappingsengine.core
 
 import com.jayway.jsonpath.JsonPath
+import org.junit.Ignore
 import org.junit.Test
 import kotlin.test.assertEquals
+import kotlin.test.fail
 
 class TestPathUtils : BasePathTest() {
 
@@ -72,10 +74,18 @@ class TestPathUtils : BasePathTest() {
         val replacementPoint = "@^c.d.e"
         assertEquals(listOf(ResolvedPaths("$['a']['b'][0]['c']['d']", "$['a']['b'][0]['c']['d']['e']", "")),
                 jpathCtx.resolveTargetPaths(replacementPoint, matchingPaths))
+    }
 
-        // TODO not supporting deep bump up
-        //  val target2 = "@^^b+somethingNew"   // traverse unknown steps up the tree until b is found within the found path
+    @Test
+    @Ignore("This feature not yet supported, ^^up")
+    fun testDeepBumpUp() {
+        val queryPath = "$.a.b[*].c.d[?(@.e == 'foo')]"
+        val matchingPaths: List<String> = jpathCtx.read(queryPath)
 
+        // go up any number of steps to the first `b`
+        val insertionPoint = "@^^b+somethingNew"
+        assertEquals(listOf(ResolvedPaths("$['a']['b'][0]['c']['d']", "$['a']['b'][0]", "somethingNew")),
+                jpathCtx.resolveTargetPaths(insertionPoint, matchingPaths))
     }
 
     @Test
@@ -155,6 +165,9 @@ class TestPathUtils : BasePathTest() {
 
     @Test
     fun testRelativePath_from_whole_array() {
+        // normally bumping up and traversing an array goes to the element, but if we select the array itself as a
+        // starting point, test what happens...
+
         val queryPath = "$.a.b"
         val matchingPaths: List<String> = jpathCtx.read(queryPath)
 
@@ -178,6 +191,18 @@ class TestPathUtils : BasePathTest() {
         jpathCtx.applyUpdatePath(insertionInfo.first().targetBasePath, insertionInfo.first().targetUpdatePath, "whatever")
     }
 
+    // notes about pathing through arrays
+    //
+    //  start at: a.b[0].c.d[1].e
+    //
+    //  @^d          goes to d[1]
+    //  @^d+[+]      goes to d to add an array item
+    //  @^d[0]       goes to array item d[0]
+    //  @^d^c^b      goes to b[0]
+    //  @^d^c^b+[*]  goes to b to update all items in the array
+    //
+    //  Therefore the rule is simple:  up paths go to the item in the array, down paths can go to the array itself
+
 
     @Test
     fun testRelativePath_from_indexed_item_in_array() {
@@ -188,55 +213,68 @@ class TestPathUtils : BasePathTest() {
         assertEquals(listOf(ResolvedPaths("$['a']['b'][0]", "$['a']['b'][0]", "")),
                 jpathCtx.resolveTargetPaths(sameObject, matchingPaths))
 
-        val goUpOne = "@^b" // go up to 'b'
-        assertEquals(listOf(ResolvedPaths("$['a']['b'][0]", "$['a']['b']", "")),
-                jpathCtx.resolveTargetPaths(goUpOne, matchingPaths))
-
-        val refIndexAtSameLevel = "@^b[1]" // stay in 'b' then down to specific index
-        assertEquals(listOf(ResolvedPaths("$['a']['b'][0]", "$['a']['b'][1]", "")),
-                jpathCtx.resolveTargetPaths(refIndexAtSameLevel, matchingPaths))
+        val goUpOneObject = "@^a" // go up to 'a'
+        assertEquals(listOf(ResolvedPaths("$['a']['b'][0]", "$['a']", "")),
+                jpathCtx.resolveTargetPaths(goUpOneObject, matchingPaths))
 
 
-        val insertionPointAtSameLevel = "@^b+[+]" // up to 'b' and add new item
+        val insertionPointAtSameLevelShort = "@+[+]" // same array but change index
+        val insertionInfo = jpathCtx.resolveTargetPaths(insertionPointAtSameLevelShort, matchingPaths)
         assertEquals(listOf(ResolvedPaths("$['a']['b'][0]", "$['a']['b']", "[+]")),
-                jpathCtx.resolveTargetPaths(insertionPointAtSameLevel, matchingPaths))
+                insertionInfo)
 
-        val insertInSameArray = "@^b^a+b[+]" // round about way to stay stay in 'b', add new item
+        val insertInSameArray1 = "@^a+b[+]" // round about way to stay stay in 'b', add new item
         assertEquals(listOf(
                 ResolvedPaths("$['a']['b'][0]", "$['a']", "b[+]")),
-                jpathCtx.resolveTargetPaths(insertInSameArray, matchingPaths))
+                jpathCtx.resolveTargetPaths(insertInSameArray1, matchingPaths))
 
+        // failure cases, if in the array item, cannot go to the array itself otherwise this would be ambigious if you
+        // wanted to go up to higher object, or wanted to be in array.
+        try {
+            val goUpOneToArray = "@^b" // go up to 'b'
+            assertEquals(listOf(ResolvedPaths("$['a']['b'][0]", "$['a']['b']", "")),
+                    jpathCtx.resolveTargetPaths(goUpOneToArray, matchingPaths))
 
-        // TODO: it isn't clear pathing through array items:
-        //    start at: a.b[0].c.d[1].e
-        //    @^d        goes to d[1]
-        //    @^d^d      goes to d the array itself
-        //    @^d^c      goes to c, but didn't have to go through the array item
-        //    @^d^c^b    goes to b[0]
-        //  etc.
-        //
-        //  this is a little confusing.  We need the ability to do either, or is it really only the item in the array that
-        //  we care about and not the array itself?  We can say it is the item unless you add [] for some insert directive
-        //  then it is the array.
-        //
-        //  So this would change the above to:
-        //
-        //  @^d          goes to d[1]
-        //  @^d+[+]      goes to d to add an array item
-        //  @^d[0]       goes to array item d[0]
-        //  @^d^c^b      goes to b[0]
-        //  @^d^c^b+[*]  goes to b to update all items in the array
-        //
-        //  Therefore the rule is simple:  up paths go to the item in the array, down paths can go to the array itself
-        //
-        // TODO: change all test cases to match this, and remove these comments.
+            fail("Cannot path from array item to its own array")
+        } catch (ex: IllegalStateException) {
+            // yay!
+        }
+
+        try {
+            val refIndexAtSameLevel = "@^b[1]" // stay in 'b' then down to specific index
+            assertEquals(listOf(ResolvedPaths("$['a']['b'][0]", "$['a']['b'][1]", "")),
+                    jpathCtx.resolveTargetPaths(refIndexAtSameLevel, matchingPaths))
+            fail("Cannot path from array item to its own array")
+        } catch (ex: IllegalStateException) {
+            // yay!
+        }
+
+        try {
+            val insertionPointAtSameLevel = "@^b+[+]" // up to 'b' and add new item
+            assertEquals(listOf(ResolvedPaths("$['a']['b'][0]", "$['a']['b']", "[+]")),
+                    jpathCtx.resolveTargetPaths(insertionPointAtSameLevel, matchingPaths))
+            fail("Cannot path from array item to its own array")
+        } catch (ex: IllegalStateException) {
+            // yay!
+        }
+
+        try {
+            val insertInSameArray2 = "@^b^a+b[+]" // more crazy round about way to stay stay in 'b', add new item
+            assertEquals(listOf(
+                    ResolvedPaths("$['a']['b'][0]", "$['a']", "b[+]")),
+                    jpathCtx.resolveTargetPaths(insertInSameArray2, matchingPaths))
+            fail("Cannot path from array item to its own array")
+        } catch (ex: IllegalStateException) {
+            // yay!
+        }
+
     }
 
     @Test
     fun testCasesFailingFromConcatTesting() {
         val queryPath = "$.states[*].name"
 
-        val relativePath = "@^states[*]+cities[*].stateName" // go up from name to states[x] down to all cities, and add stateName
+        val relativePath = "@^states+cities[*].stateName" // go up from name to states[x] down to all cities, and add stateName
         val absolutePath = "$.states[*]+cities[*].stateName" // prefix match into states[x], then down to all cities, and add stateName
 
         val popTooFar = "@^states"
@@ -255,8 +293,8 @@ class TestPathUtils : BasePathTest() {
 
 
         assertEquals(listOf(
-                ResolvedPaths("$['states'][0]['name']", "$['states']", ""),
-                ResolvedPaths("$['states'][1]['name']", "$['states']", "")),
+                ResolvedPaths("$['states'][0]['name']", "$['states'][0]", ""),
+                ResolvedPaths("$['states'][1]['name']", "$['states'][1]", "")),
                 jpathCtx.resolveTargetPaths(popTooFar, matchingPaths))
     }
 

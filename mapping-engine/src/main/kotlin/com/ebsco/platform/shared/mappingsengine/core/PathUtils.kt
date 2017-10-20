@@ -7,47 +7,10 @@ import com.jayway.jsonpath.Option
 
 data class ResolvedPaths(val sourcePath: String, val targetBasePath: String, val targetUpdatePath: String)
 
-/**
- * Target Pathing:  resolving relative insertion paths.
- *
- * Those starting with `@.` are relative to the found object, and use normal JSON Path Syntax to path downwards
- *          @.b.c.d.e.f
- *
- * Where any path elements must exist.  For elements that can be added if missing, a `+` replaces the `.` for the
- * point at which new paths can be created:
- *
- *          @.b.c+d.e.f
- *
- * allows `d` to be added, then `e`, and then property `f` with whatever value is being set.  Existing elements
- * are traversed instead of being inserted.
- *
- * To path upwards, use the `^` instead of the `.` and then resume downward with `.` or `+`.  For example:
- *
- *          @^y^x+d.e.f
- *
- * Would go up from the current node to a parent called `y`, its parent `x` and then allow `d` to be created and
- * so on downwards.
- *
- * A relative path through an array index, has the following behavior:  If pathing through a parent array with `[*]`
- * then the index used will be the same as that within the path of the current node.  for example, current node is:
- *
- *          $.b.c[1].d[2].e.f
- *
- * the relative path from `f` of `@^e^d[*]+z` or `@^e^d+z` would set insertion point at `$.a.c[1].d[2].z`
- *
- * An array must exist for the existing portion of the target path, or it is an invalid target. After the update
- * marker of `+` the bahavior is:
- *
- *          [*]  all indexes that match at that point are updated (but not added)
- *          [*+]  all indexes that match at that point are updated, if not present, an empty object is added
- *          [+]  a new item will be added to the array at this point regardless of contents
- *          [0]  the first item is updated (but not added)
- *          [0+] the first item is updated and if not present, an empty object added
- *
- * After the update marker `+` you can only use simple pathing, no expressions can be used.  They can be used to
- * the left of the marker to indicate a query for a path that already exists.
- *
- */
+// TODO: clean up path parsing with more formal parser than string splits
+//       then stay with parsed paths until the very end, and render
+//       This will prevent going to from string paths a few times in some cases
+
 fun DocumentContext.resolveTargetPaths(targetPath: String, matchingPaths: List<String>, allowNoMatchingTarget: Boolean = false): List<ResolvedPaths> {
     val tempConfig = Configuration.builder()
             .options(Option.SUPPRESS_EXCEPTIONS)
@@ -98,7 +61,7 @@ fun DocumentContext.resolveTargetPaths(targetPath: String, matchingPaths: List<S
             matchingPaths.map { Pair(it, it) }
         } else if ('^' in existingPath) {
             // we have @^a^b.c.d
-            // after popping up, we can only go downwards.
+            // after popping up, we can only go downwards.  So start with all the upward movement...
 
             val firstDot = existingPath.indexOf('.')
             if (existingPath[1] != '^' || (firstDot != -1 && existingPath.indexOf('^', firstDot) != -1)) {
@@ -107,7 +70,7 @@ fun DocumentContext.resolveTargetPaths(targetPath: String, matchingPaths: List<S
 
             val startingPath = existingPath.substring(2)
 
-            // a . or [] starts downwards again
+            // and now . or [] starts downwards again...
 
             val earliestDownSymbol = startingPath.indexOfAny(charArrayOf('.','['))
 
@@ -116,27 +79,53 @@ fun DocumentContext.resolveTargetPaths(targetPath: String, matchingPaths: List<S
 
             // go up for each path for each upward part
             val uppedPaths = matchingPaths.map { matchPath ->
-                val temp: String = matchPath.substring(1) // skip the $
+                val temp = matchPath.substring(1) // skip the $
                 var tempParts = temp.split(']').map { it.removePrefix("[") }.filter { it.isNotBlank() }
                 var lastPath: String? = null
                 upwardsParts.forEach { upper ->
+                    // going up from a.b[1].c goes to b[1],
+                    //         is ['a']['b'][1]['c'] to ['a']['b'][1]
+                    // going up from a.b[1] goes to a,
+                    //         is ['a']['b'][1] to ['a']
+                    // going up from a.b[1].c[1] goes to b[1]
+                    //         is ['a']['b'][1]['c'][1] to ['a']['b'][1]
+
+                    val inspectPossibleArrayIndex = tempParts.lastOrNull() ?: throw IllegalStateException("Cannot path upwards using $targetPath from starting $matchPath, attempted to pop up past the first element")
+
+                    // we are on an array index, so from perspective of popping up, start at the array
+                    if (numRegex.matches(inspectPossibleArrayIndex)) {
+                       tempParts = tempParts.dropLast(1)
+                       // ['a']['b'][1]  is now ['a']['b']
+
+                       if (tempParts.isEmpty()) {
+                            throw IllegalStateException("Cannot path upwards using $targetPath from starting $matchPath, attempted to pop up past the first element")
+                       }
+                    }
+
+                    // pop up to the possible landing point
                     tempParts = tempParts.dropLast(1)
                     lastPath = tempParts.map { "[$it]" }.joinToString("", "$")
-                    val lastPart = tempParts.lastOrNull()?.let {
-                        if (numRegex.matches(it)) {
-                            tempParts = tempParts.dropLast(1)
-                            tempParts.lastOrNull()
+
+                    // the ID of the landing point is this node if it is not an array index, otherwise is the node above
+                    val inspectLastPartAgain = tempParts.lastOrNull() ?: throw IllegalStateException("Cannot path upwards using $targetPath from starting $matchPath, attempted to pop up past the first element")
+
+                    val checkPoint = if (numRegex.matches(inspectLastPartAgain)) {
+                        if (tempParts.size < 2) {
+                            throw IllegalStateException("Cannot path upwards using $targetPath from starting $matchPath, unexpected array index as first element")
                         } else {
-                            it
+                            tempParts[tempParts.size-2]
                         }
+                    } else {
+                        inspectLastPartAgain
                     }
-                    if (lastPart?.startsWith('\'') ?: false) {
-                        val id = tempParts.last().trim('\'')
+
+                    if (checkPoint.startsWith('\'')) {
+                        val id = checkPoint.trim('\'')
                         if (id != upper) {
                             throw IllegalStateException("Cannot path upwards using $targetPath from starting $matchPath, error popping up to $upper, found $id instead")
                         }
                     } else {
-                        throw IllegalStateException("Cannot path upwards using $targetPath from starting $matchPath")
+                        throw IllegalStateException("Cannot path upwards using $targetPath from starting $matchPath, the next part has no valid name")
                     }
                 }
                 Pair(matchPath, lastPath)
@@ -185,7 +174,25 @@ fun DocumentContext.resolveTargetPaths(targetPath: String, matchingPaths: List<S
         throw IllegalStateException("Some source paths cannot be related to a root existing path: ${matchingPathsMissing}")
     }
 
-    return correlatedMatchWithTarget.map { ResolvedPaths(it.first, it.second ?: "", updatePath) }
+    val normalizedPaths = correlatedMatchWithTarget.map {
+        val originalTarget = it.second ?: ""
+        val normalizedTarget = if (updatePath.startsWith('[') && originalTarget.isNotBlank()) {
+            // we are possibly changing an array index in place
+            val tempParts = originalTarget.substring(1).split(']').map { it.removePrefix("[") }.filter { it.isNotBlank() }
+            val checkLastPart = tempParts.last()
+            val finalParts = if (numRegex.matches(checkLastPart)) {
+                tempParts.dropLast(1)
+            } else {
+                tempParts
+            }
+            finalParts.map { "[$it]" }.joinToString("", "$")
+        } else {
+            originalTarget
+        }
+        ResolvedPaths(it.first, normalizedTarget, updatePath)
+    }
+
+    return normalizedPaths
 }
 
 fun DocumentContext.applyUpdatePath(basePath: String, updatePath: String, jsonFragment: Any) {
@@ -207,13 +214,6 @@ fun DocumentContext.applyUpdatePath(basePath: String, updatePath: String, jsonFr
                 throw IllegalStateException("Base path for update $basePath was not found in document")
 
         val updateSteps = updatePath.trim().split('.')
-
-        // must handle:
-        //    a.b.c
-        //    a.b[x].c
-        //
-        //     where x is one of *, *+, 0, 0+, +
-
 
         fun drillDownToUpdate(startNode: Any, steppy: Iterator<Pair<String, Boolean>>) {
             var node = startNode
