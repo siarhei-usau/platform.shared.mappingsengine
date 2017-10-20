@@ -23,3 +23,19 @@ enum class Errors(val msg: String) : ErrorCode {
     override fun getMessage(): String = msg
     override fun getCode(): String = name
 }
+
+const val emptyConfigJson = """
+{
+  "metadata": {
+    "id": "empty",
+    "version": "1.0.0",
+    "primaryKey": "$.id"
+  },
+  "transforms": [
+  ],
+  "configuration": {
+    "xml2json": {
+    }
+  }
+}
+"""

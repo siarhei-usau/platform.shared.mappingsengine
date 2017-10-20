@@ -16,7 +16,7 @@ import java.io.InputStream
 @GenerateResourceBundle
 class XmlToJsonCanonicalProcessor : SingleLaneRecordProcessor() {
     val LOG = LoggerFactory.getLogger(XmlToJsonCanonicalProcessor::class.java)
-    @ConfigDef(required = true, type = ConfigDef.Type.TEXT, defaultValue = """{ "mappings": [] }""",
+    @ConfigDef(required = true, type = ConfigDef.Type.TEXT, defaultValue = emptyConfigJson,
             label = "Mappings JSON", displayPosition = 10, group = MAPPINGS_GROUP,
             description = "Mappings instruction set as JSON, either Simple or SLS formats")
     @JvmField

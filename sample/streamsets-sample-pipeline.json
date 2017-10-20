@@ -5,7 +5,7 @@
     "pipelineId" : "Mappings76b9001c-945e-4f14-82eb-7230ff0c5361",
     "title" : "Mappings",
     "description" : "",
-    "uuid" : "e35e7db3-e163-40aa-82d5-289f559c7f42",
+    "uuid" : "bcf384c6-dc98-4682-8b5a-4a2a868fa076",
     "configuration" : [ {
       "name" : "executionMode",
       "value" : "STANDALONE"
@@ -347,7 +347,7 @@
       "stageVersion" : "1",
       "configuration" : [ {
         "name" : "mappingInstructions",
-        "value" : "{ \"mappings\": [] }"
+        "value" : "{\n  \"metadata\": {\n    \"id\": \"rs-mappings\",\n    \"version\": \"1.0.0\",\n    \"primaryKey\": \"$.book.body[0].book-part[0].book-part-meta[0].doi\"\n  },\n  \"transforms\": [\n    {\n      \"type\": \"rename\",\n      \"config\": {\n        \"fromPath\": \"$.book.body[0].book-part[0].book-part-meta[0].book-part-id[*].value\",\n        \"targetPath\": \"@^book-part-id+id\"\n      }\n    },\n    {\n      \"type\": \"copy\",\n      \"config\": {\n        \"fromPath\": \"$.book.body[0].book-part[0].book-part-meta[0].book-part-id[?(@.pub-id-type=='doi')].id\",\n        \"targetPath\": \"@^book-part-id^book-part-meta+doi\"\n      }\n    },\n    {\n      \"type\": \"lookup\",\n      \"config\": {\n        \"lookupResource\": \"lookup_w_ui.txt\",\n        \"filters\": [\n          {\n            \"lookupField\": \"AN\",\n            \"fromPath\": \"$.book[0].body[0].book-part[0].book-part-meta[0].book-part-id[0].value\"\n          },\n          {\n            \"lookupField\": \"Type\",\n            \"lookupValues\": [\n              \"subject\",\n              \"subjectgeo\"\n            ]\n          }\n        ],\n        \"targetPath\": \"$.book.front[0].article-meta[0]+article-categories[+].subj-group[*+]\",\n        \"jsonTemplate\": {\n          \"group_type\": \"ebsco_{{Type}}\",\n          \"subject\": [\n            {\n              \"id\": \"{{Term_Id}}\",\n              \"value\": \"{{Term}}\"\n            }\n          ]\n        },\n        \"mode\": \"merge\"\n      }\n    }\n  ],\n  \"configuration\": {\n    \"xml2json\": {\n      \"embedLiteralXmlAtPaths\": [\n        \"//book[*]/body[*]/book-part[*]/book-front[*]/sec\",\n        \"//book[*]/body[*]/book-part[*]/body[*]/sec\",\n        \"//book[*]/body[*]/book-part[*]/book-part-meta[*]/abstract/p\"\n      ]\n    }\n  }\n}"
       }, {
         "name" : "rawXmlField",
         "value" : "/fileRef"
@@ -360,11 +360,14 @@
       }, {
         "name" : "stageRecordPreconditions",
         "value" : [ ]
+      }, {
+        "name" : "outJsonField",
+        "value" : "/json"
       } ],
       "uiInfo" : {
         "description" : "",
         "label" : "XML2JSON Canonical Processor 1",
-        "xPos" : 328.001708984375,
+        "xPos" : 327.001708984375,
         "yPos" : 63.001708984375,
         "stageType" : "PROCESSOR"
       },
@@ -584,11 +587,11 @@
       "title" : "Mappings",
       "description" : "",
       "created" : 1506688358280,
-      "lastModified" : 1508139760813,
+      "lastModified" : 1508501273845,
       "creator" : "admin",
       "lastModifier" : "admin",
       "lastRev" : "0",
-      "uuid" : "e35e7db3-e163-40aa-82d5-289f559c7f42",
+      "uuid" : "bcf384c6-dc98-4682-8b5a-4a2a868fa076",
       "valid" : true,
       "metadata" : {
         "labels" : [ ]
@@ -651,12 +654,12 @@
       "outputLanes" : [ ],
       "eventLanes" : [ ]
     } ],
+    "previewable" : true,
     "issues" : {
       "pipelineIssues" : [ ],
       "stageIssues" : { },
       "issueCount" : 0
     },
-    "previewable" : true,
     "valid" : true
   },
   "pipelineRules" : {
