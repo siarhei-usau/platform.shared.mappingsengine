@@ -18,11 +18,5 @@ data class XmlToRecordParserConfig(val preserveNestedTextElements_ByXPath: List<
     companion object {
         val DEFAULTS = XmlToRecordParserConfig()
 
-        val DEFAULTS_WITH_ERS_TEMP_PATHS = DEFAULTS.copy(preserveNestedTextElements_ByXPath = listOf(
-                // TODO: load this from configuration
-                "//book[*]/body[*]/book-part[*]/book-front[*]/sec",
-                "//book[*]/body[*]/book-part[*]/body[*]/sec",
-                "//book[*]/body[*]/book-part[*]/book-part-meta[*]/abstract/p"
-        ))
     }
 }

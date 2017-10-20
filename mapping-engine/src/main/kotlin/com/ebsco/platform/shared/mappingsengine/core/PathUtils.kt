@@ -215,10 +215,12 @@ fun DocumentContext.applyUpdatePath(basePath: String, updatePath: String, jsonFr
 
         val updateSteps = updatePath.trim().split('.')
 
-        fun drillDownToUpdate(startNode: Any, steppy: Iterator<Pair<String, Boolean>>) {
+        fun drillDownToUpdate(startNode: Any, originalSteps: List<Pair<String, Boolean>>) {
             var node = startNode
-            while (steppy.hasNext()) {
-                val (step, last) = steppy.next()
+            var steppy = originalSteps
+            while (steppy.isNotEmpty()) {
+                val (step, last) = steppy.first()
+                steppy = steppy.drop(1)
 
                 val id = if (step.startsWith('[')) "" else step.substringBefore('[')
                 val idx = step.substringAfter('[', "").removeSuffix("]")
@@ -312,8 +314,8 @@ fun DocumentContext.applyUpdatePath(basePath: String, updatePath: String, jsonFr
             }
         }
 
-        val stepIterator = updateSteps.mapIndexed { stepNum, step -> Pair(step, stepNum == updateSteps.size - 1) }.iterator()
-        drillDownToUpdate(baseNode!!, stepIterator)
+        val steps = updateSteps.mapIndexed { stepNum, step -> Pair(step, stepNum == updateSteps.size - 1) }
+        drillDownToUpdate(baseNode!!, steps)
     }
 
 

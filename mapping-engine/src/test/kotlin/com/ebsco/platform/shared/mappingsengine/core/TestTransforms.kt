@@ -146,7 +146,7 @@ class TestTransforms: BasePathTest() {
 
         // TODO: this is failing until TestPathUtils all pass, one case is broken there, see testCasesFailingFromConcatTesting()
 
-        CopyJsonTransform("$.states[*].name", "$^states[*]+cities[*].stateName").apply(context)
+        CopyJsonTransform("$.states[*].name", "@^states+cities[*].stateName").apply(context)
         printJson(context.jsonObject, "After Copy")
 
         val fromPaths = listOf("$.states[*].cities[*].name", "$.states[*].cities[*].stateName")

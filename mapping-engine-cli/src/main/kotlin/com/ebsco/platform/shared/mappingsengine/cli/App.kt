@@ -1,7 +1,7 @@
 package com.ebsco.platform.shared.mappingsengine.cli
 
+import com.ebsco.platform.shared.mappingsengine.config.MappingsEngineJsonConfig
 import com.ebsco.platform.shared.mappingsengine.core.MappingsEngine
-import com.ebsco.platform.shared.mappingsengine.core.MappingsEngineConfig
 import com.ebsco.platform.shared.mappingsengine.xml.XmlToRecordParser
 import com.ebsco.platform.shared.mappingsengine.xml.XmlToRecordParserConfig
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -81,15 +81,23 @@ class MappingEngineCliApp(val configFile: File, val xmlInputFile: File, val json
         println("Mapping-Engine TEST Tool")
         println("processing XML")
 
-        val parser = XmlToRecordParser(XmlToRecordParserConfig.DEFAULTS_WITH_ERS_TEMP_PATHS.copy(
-                preserveNestedTextElements_AutoDetect = false,
-                preserveNestedTextElements_UnhandledResultInError = true,
-                jsonProvider = JacksonJsonProvider(),
-                textNodeName = "value",
-                attributeNodePrefix = ""
+        val cfgFile = configFile.inputStream().use { MappingsEngineJsonConfig.fromJson(it) }
+
+        val xml2jsonCfg = cfgFile.configuration.xml2json
+        val parser = XmlToRecordParser(XmlToRecordParserConfig(
+             preserveNestedTextElements_ByXPath = xml2jsonCfg.embedLiteralXmlAtPaths,
+                preserveNestedTextElements_AutoDetect = xml2jsonCfg.autoDetectMixedContent,
+                preserveNestedTextElements_UnhandledResultInError = xml2jsonCfg.unhandledMixedContentIsError,
+                forceSingleValueNodes_ByXPath = xml2jsonCfg.forceSingleValueElementAtPaths,
+                forceElevateTextNode_ByXPath = xml2jsonCfg.forceElevateTextNodesAtPaths,
+                forceElevateTextNodesAreSingleValued = xml2jsonCfg.forceElevateTextNodesAsSingleValue,
+                textNodeName = xml2jsonCfg.textNodeName,
+                attributeNodePrefix = xml2jsonCfg.attributeNodePrefix,
+                attributePrefixesToKeep = xml2jsonCfg.preserveAttributePrefixes.toSet(),
+                jsonProvider = JacksonJsonProvider()
         ))
 
-        val mappings = MappingsEngine(MappingsEngineConfig.DEFAULTS.copy(jsonProvider = parser.config.jsonProvider))
+        val mappings = MappingsEngine(cfgFile.transforms, jsonProvider = parser.config.jsonProvider)
 
         val (rootNodeName, innerObject) = xmlInputFile.inputStream().use { parser.parse(it) }
         @Suppress("UNCHECKED_CAST")

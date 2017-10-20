@@ -8,7 +8,6 @@ import com.streamsets.pipeline.api.Label
 const val MAPPINGS_GROUP = "Mappings"
 
 val systemFieldsToDelete = listOf("/fileRef")
-val systemFieldForJsonOutput = "/json"
 
 @GenerateResourceBundle
 enum class Groups(val groupName: String) : Label {

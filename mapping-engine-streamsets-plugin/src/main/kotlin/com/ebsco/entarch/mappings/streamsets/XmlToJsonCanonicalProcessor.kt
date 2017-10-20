@@ -1,21 +1,15 @@
 package com.ebsco.entarch.mappings.streamsets
 
-import _ss_com.fasterxml.jackson.databind.ObjectMapper
-import _ss_com.streamsets.datacollector.json.JsonRecordWriterImpl
+import com.ebsco.platform.shared.mappingsengine.config.MappingsEngineJsonConfig
 import com.ebsco.platform.shared.mappingsengine.core.MappingsEngine
-import com.ebsco.platform.shared.mappingsengine.core.MappingsEngineConfig
 import com.ebsco.platform.shared.mappingsengine.xml.XmlToRecordParser
 import com.ebsco.platform.shared.mappingsengine.xml.XmlToRecordParserConfig
-import com.jayway.jsonpath.Configuration
-import com.jayway.jsonpath.JsonPath
-import com.jayway.jsonpath.Option
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.jayway.jsonpath.spi.json.JacksonJsonProvider
 import com.streamsets.pipeline.api.*
 import com.streamsets.pipeline.api.base.SingleLaneRecordProcessor
-import com.streamsets.pipeline.api.ext.json.Mode
 import org.slf4j.LoggerFactory
 import java.io.InputStream
-import java.io.StringWriter
 
 @StageDef(version = 1, label = "XML2JSON Canonical Processor", description = "", icon = "default.png", onlineHelpRefUrl = "")
 @ConfigGroups(Groups::class)
@@ -35,6 +29,38 @@ class XmlToJsonCanonicalProcessor : SingleLaneRecordProcessor() {
     @FieldSelectorModel(singleValued = true)
     @JvmField
     var rawXmlField: String? = null
+
+    @ConfigDef(required = true, type = ConfigDef.Type.MODEL,
+            defaultValue = """/json""",
+            label = "JSON output Field", displayPosition = 8, group = MAPPINGS_GROUP,
+            description = "Output field to place the text version of the resulting JSON")
+    @FieldSelectorModel(singleValued = true)
+    @JvmField
+    var outJsonField: String? = null
+
+
+    private val cfgJson by lazy { MappingsEngineJsonConfig.fromJson(mappingInstructions!!) }
+
+    private val xml2jsonCfg by lazy { cfgJson.configuration.xml2json }
+
+    private val parser by lazy {
+        XmlToRecordParser(XmlToRecordParserConfig(
+                preserveNestedTextElements_ByXPath = xml2jsonCfg.embedLiteralXmlAtPaths,
+                preserveNestedTextElements_AutoDetect = xml2jsonCfg.autoDetectMixedContent,
+                preserveNestedTextElements_UnhandledResultInError = xml2jsonCfg.unhandledMixedContentIsError,
+                forceSingleValueNodes_ByXPath = xml2jsonCfg.forceSingleValueElementAtPaths,
+                forceElevateTextNode_ByXPath = xml2jsonCfg.forceElevateTextNodesAtPaths,
+                forceElevateTextNodesAreSingleValued = xml2jsonCfg.forceElevateTextNodesAsSingleValue,
+                textNodeName = xml2jsonCfg.textNodeName,
+                attributeNodePrefix = xml2jsonCfg.attributeNodePrefix,
+                attributePrefixesToKeep = xml2jsonCfg.preserveAttributePrefixes.toSet(),
+                jsonProvider = JacksonJsonProvider()
+        ))
+    }
+
+    private val mappings by lazy { MappingsEngine(cfgJson.transforms, jsonProvider = parser.config.jsonProvider) }
+
+    private val jsonMapper = jacksonObjectMapper()
 
     override fun init(): MutableList<Stage.ConfigIssue> {
         return super.init().also { issues ->
@@ -66,16 +92,6 @@ class XmlToJsonCanonicalProcessor : SingleLaneRecordProcessor() {
             inputField.valueAsFileRef.createInputStream(context, InputStream::class.java)
         }
 
-        val parser = XmlToRecordParser(XmlToRecordParserConfig.DEFAULTS_WITH_ERS_TEMP_PATHS.copy(
-                preserveNestedTextElements_AutoDetect = false,
-                preserveNestedTextElements_UnhandledResultInError = true,
-                jsonProvider = JacksonJsonProvider(),
-                textNodeName = "value",
-                attributeNodePrefix = ""
-        ))
-
-        val mappings = MappingsEngine(MappingsEngineConfig.DEFAULTS.copy(jsonProvider = parser.config.jsonProvider))
-
         val (xmlField, xmlData) = inputStream.use { parser.parse(it) }
 
         @Suppress("UNCHECKED_CAST")
@@ -85,45 +101,9 @@ class XmlToJsonCanonicalProcessor : SingleLaneRecordProcessor() {
 
         // we go direct to a JSON field, which can be parsed by streamsets if desired to be operated upon further.
 
-        val json = ObjectMapper().let { mapper ->
-            mapper.writerWithDefaultPrettyPrinter().writeValueAsString(jsonObject)
-        }
-        record.set(systemFieldForJsonOutput, Field.create(json)) // TODO: make this field configurable
+        val json = jsonMapper.writerWithDefaultPrettyPrinter().writeValueAsString(jsonObject)
 
-
-        /* TODO: Old idea, create a full record structure into StreamSets, but the JsonProcessor can do that already so no need here
-        ...
-
-        record.set("/${xmlField}", jsonToStreamSetsField(jsonObject[xmlField]!!))
-
-        // remove field's that break serialization
-        systemFieldsToDelete.forEach { record.delete(it) }
-
-        // temporarily remove the input XML field
-        val tempXmlInput = record.delete(inputFieldNameFixed)
-
-        // convert from StreamSets model to JSON
-        val writer = StringWriter()
-        JsonRecordWriterImpl(writer, Mode.MULTIPLE_OBJECTS).apply {
-            write(record)
-            flush()
-            close()
-        }
-
-        // output as pretty JSON to the json field used for file output
-        val json = ObjectMapper().let { mapper ->
-            mapper.writerWithDefaultPrettyPrinter().writeValueAsString(mapper.readTree(writer.toString()))
-        }
-        record.set(systemFieldForJsonOutput, Field.create(json)) // TODO: make this field configurable
-
-        // put back the temporary input XML field
-        if (tempXmlInput != null) {
-            record.set(inputFieldNameFixed, inputField)
-        }
-
-        // set downstream operation to insert (1) or upsert (4)
-        record.header.setAttribute("sdc.operation.type", "1")
-        */
+        record.set(outJsonField ?: "/json", Field.create(json))
 
         return record
     }

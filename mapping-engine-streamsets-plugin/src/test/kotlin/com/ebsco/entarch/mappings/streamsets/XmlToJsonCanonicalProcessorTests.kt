@@ -18,23 +18,21 @@ import com.streamsets.pipeline.api.ext.json.Mode
 import com.streamsets.pipeline.sdk.ProcessorRunner
 import com.streamsets.pipeline.sdk.RecordCreator
 import org.junit.Test
-import java.io.ByteArrayInputStream
-import java.io.InputStream
-import java.io.StringReader
-import java.io.StringWriter
+import java.io.*
 import kotlin.test.assertEquals
 
 // TODO: ok, these were more development harnesses than tests, change this to be more realistic tests
 
 class XmlToJsonCanonicalProcessorTests {
+    val outJsonFieldName = "/json"
 
     @Test
     fun testProcessorCanRunFromString() {
         val xmlInputFieldName = "/rawXml"
-
         val runner = ProcessorRunner.Builder(XmlToJsonCanonicalProcessor::class.java)
-                .addConfiguration("mappingInstructions", "value")
+                .addConfiguration("mappingInstructions", File("../sample/mappings-example.json").readText())
                 .addConfiguration("rawXmlField", xmlInputFieldName)
+                .addConfiguration("outJsonField", outJsonFieldName)
                 .addOutputLane("output")
                 .build()
 
@@ -55,7 +53,7 @@ class XmlToJsonCanonicalProcessorTests {
             final.delete(xmlInputFieldName)
             final.escapedFieldPaths.toList().forEach{ println("FIELD: $it") }
 
-            val finalJson = final.get(systemFieldForJsonOutput).valueAsString
+            val finalJson = final.get(outJsonFieldName).valueAsString
 
             println("OUTPUT FINAL RECORD:\n\n ${finalJson}")
 
@@ -78,8 +76,9 @@ class XmlToJsonCanonicalProcessorTests {
         val xmlInputFieldName = "/fileRef"
 
         val runner = ProcessorRunner.Builder(XmlToJsonCanonicalProcessor::class.java)
-                .addConfiguration("mappingInstructions", "value")
+                .addConfiguration("mappingInstructions", File("../sample/mappings-example.json").readText())
                 .addConfiguration("rawXmlField", xmlInputFieldName)
+                .addConfiguration("outJsonField", outJsonFieldName)
                 .addOutputLane("output")
                 .build()
 
@@ -113,7 +112,7 @@ class XmlToJsonCanonicalProcessorTests {
             final.delete(xmlInputFieldName)
             final.escapedFieldPaths.toList().forEach{ println("FIELD: $it") }
 
-            val finalJson = final.get(systemFieldForJsonOutput).valueAsString
+            val finalJson = final.get(outJsonFieldName).valueAsString
 
             println("OUTPUT FINAL RECORD:\n\n ${finalJson}")
 

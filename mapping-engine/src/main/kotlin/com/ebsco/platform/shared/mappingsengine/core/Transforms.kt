@@ -4,7 +4,7 @@ import com.jayway.jsonpath.Configuration
 import com.jayway.jsonpath.JsonPath
 
 interface JsonTransformer {
-   fun apply(context: JsonTransformerContext)
+    fun apply(context: JsonTransformerContext)
 }
 
 open class JsonTransformerContext(val jsonObject: Any, val jpathCfg: Configuration, val jvalueCfg: Configuration, val jvalueListCfg: Configuration) {
@@ -39,11 +39,11 @@ open class JsonTransformerContext(val jsonObject: Any, val jpathCfg: Configurati
     fun deleteValue(jsonPath: String) = jvalueCtx.delete(jsonPath)
 }
 
-class RenameJsonTransform(val sourceJsonPath: String, val targetJsonRelPath: String) : JsonTransformer {
-    val compiledSourceJsonPath = JsonPath.compile(sourceJsonPath)
+class RenameJsonTransform(val fromPath: String, val targetPath: String) : JsonTransformer {
+    val compiledSourceJsonPath = JsonPath.compile(fromPath)
 
     override fun apply(context: JsonTransformerContext) {
-        val fromToMapping: List<ResolvedPaths> = context.queryAndResolveTargetPaths(compiledSourceJsonPath, targetJsonRelPath)
+        val fromToMapping: List<ResolvedPaths> = context.queryAndResolveTargetPaths(compiledSourceJsonPath, targetPath)
         fromToMapping.forEach { mapping ->
             val sourceValue = context.queryForValue(mapping.sourcePath)
             context.applyUpdate(mapping, sourceValue)
@@ -52,19 +52,19 @@ class RenameJsonTransform(val sourceJsonPath: String, val targetJsonRelPath: Str
     }
 }
 
-class DeleteJsonTransform(val sourceJsonPath: String): JsonTransformer {
-    val compiledSourceJsonPath = JsonPath.compile(sourceJsonPath)
+class DeleteJsonTransform(val deletePath: String): JsonTransformer {
+    val compiledSourceJsonPath = JsonPath.compile(deletePath)
     override fun apply(context: JsonTransformerContext) {
        context.queryForPaths(compiledSourceJsonPath).forEach { context.deleteValue(it) }
     }
 }
 
 
-class CopyJsonTransform(val sourceJsonPath: String, val targetJsonRelPath: String) : JsonTransformer {
-    val compiledSourceJsonPath = JsonPath.compile(sourceJsonPath)
+class CopyJsonTransform(val fromPath: String, val targetPath: String) : JsonTransformer {
+    val compiledSourceJsonPath = JsonPath.compile(fromPath)
 
     override fun apply(context: JsonTransformerContext) {
-        val fromToMapping: List<ResolvedPaths> = context.queryAndResolveTargetPaths(compiledSourceJsonPath, targetJsonRelPath)
+        val fromToMapping: List<ResolvedPaths> = context.queryAndResolveTargetPaths(compiledSourceJsonPath, targetPath)
         fromToMapping.forEach { mapping ->
             val sourceValue = context.queryForValue(mapping.sourcePath)
             context.applyUpdate(mapping, sourceValue)
@@ -72,7 +72,7 @@ class CopyJsonTransform(val sourceJsonPath: String, val targetJsonRelPath: Strin
     }
 }
 
-class ConcatJsonTransform(val sourceJsonPaths: List<String>, val delimiter: String, val targetJsonAbsolutePath: String) : JsonTransformer {
+class ConcatJsonTransform(val fromPaths: List<String>, val delimiter: String, val targetPath: String) : JsonTransformer {
     override fun apply(context: JsonTransformerContext) {
         // it gets complicated to handle cases where the source values are not in the same objects.  So we assume they are.
         //
@@ -95,8 +95,8 @@ class ConcatJsonTransform(val sourceJsonPaths: List<String>, val delimiter: Stri
         //     $.state[1].name            "California"        none, but path $.state[1] is a prefix match for above
         //
 
-        val allMappings: List<Pair<String, List<ResolvedPaths>>> = sourceJsonPaths.map {
-            Pair(it, context.queryAndResolveTargetPaths(it, targetJsonAbsolutePath, true))
+        val allMappings: List<Pair<String, List<ResolvedPaths>>> = fromPaths.map {
+            Pair(it, context.queryAndResolveTargetPaths(it, targetPath, true))
         }
 
         val allMappingsGroupedByTarget = allMappings.map { mappedPath ->
@@ -112,7 +112,7 @@ class ConcatJsonTransform(val sourceJsonPaths: List<String>, val delimiter: Stri
 
         // for each target path, collect the values in the order of the original source path list
         allMappingsGroupedByTarget.forEach { (targetPath, sourceMap) ->
-            val sourceValuesInOrder = sourceJsonPaths.map { originalPath ->
+            val sourceValuesInOrder = fromPaths.map { originalPath ->
                 sourceMap[originalPath]?.let { context.queryForValue(it) }
             }.filterNotNull()
             context.applyUpdate(targetPath.first, targetPath.second, sourceValuesInOrder.joinToString(delimiter))
@@ -120,3 +120,12 @@ class ConcatJsonTransform(val sourceJsonPaths: List<String>, val delimiter: Stri
 
     }
 }
+
+class LookupJsonTransform(val lookupResource: String, val filters: List<LookupFilter>, val mode: String = "merge",
+                          val targetPath: String, val jsonTemplate: Map<String, Any>): JsonTransformer {
+    override fun apply(context: JsonTransformerContext) {
+        // TODO, port from prototype
+    }
+}
+
+data class LookupFilter(val lookupField: String, val fromPath: String?, val lookupValues: List<String> = emptyList())
