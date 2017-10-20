@@ -110,7 +110,7 @@ class ConcatJsonTransform(val fromPaths: List<String>, val delimiter: String, va
         }.flatten().groupBy { it.first }.mapValues {
             it.value.map { it.second }.map {
                 it.first to it.second.sourcePath
-            }.toMap()
+            }.groupBy { it.first }.mapValues { it.value.map { it.second } }
         }
 
         // we now have a map of target path, to a map of source paths to actual value path (in the resolved object)
@@ -118,8 +118,8 @@ class ConcatJsonTransform(val fromPaths: List<String>, val delimiter: String, va
         // for each target path, collect the values in the order of the original source path list
         allMappingsGroupedByTarget.forEach { (targetPath, sourceMap) ->
             val sourceValuesInOrder = fromPaths.map { originalPath ->
-                sourceMap[originalPath]?.let { context.queryForValue(it) }
-            }.filterNotNull()
+                sourceMap[originalPath]?.map { context.queryForValue(it) }
+            }.filterNotNull().flatten()
             context.applyUpdate(targetPath.first, targetPath.second, sourceValuesInOrder.joinToString(delimiter))
         }
 

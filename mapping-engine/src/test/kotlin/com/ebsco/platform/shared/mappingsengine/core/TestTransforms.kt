@@ -231,5 +231,80 @@ class TestTransforms : BasePathTest() {
         }
     }
 
+    @Test
+    fun testConcatTransform_MultipleOfSameIntoSingle_absoluteTarget() {
 
+        val context = makeContext()
+
+        /*
+            from { "states": [{ "name": "Colorado", "cities": [{ "name": "Denver" }, { "name": "Boulder" }] , ...] }
+            to   { "states": [{ "name": "Colorado", "cityList": "Denver, Boulder", "cities": [{ "name": "Denver", ... }, { "name": "Boulder", ... }, ...] }
+         */
+
+        val fromPaths = listOf("$.states[*].cities[*].name")
+
+        // need absolute target path here because the from nodes are at different levels
+        ConcatJsonTransform(fromPaths, ", ", "$.states[*]+cityList").apply(context)
+        printJson(context.jsonObject, "After Concat")
+
+        assertEquals("Denver, Boulder", context.queryForValue("$.states[0].cityList"))
+        assertEquals("San Francisco, Santa Cruz", context.queryForValue("$.states[1].cityList"))
+    }
+
+
+    @Test
+    fun testConcatTransform_MultipleOfSameIntoSingle_relativeTarget() {
+
+        val context = makeContext()
+
+        /*
+            from { "states": [{ "name": "Colorado", "cities": [{ "name": "Denver" }, { "name": "Boulder" }] , ...] }
+            to   { "states": [{ "name": "Colorado", "cityList": "Denver, Boulder", "cities": [{ "name": "Denver", ... }, { "name": "Boulder", ... }, ...] }
+         */
+
+        val fromPaths = listOf("$.states[*].cities[*].name")
+
+        // need absolute target path here because the from nodes are at different levels
+        ConcatJsonTransform(fromPaths, ", ", "@^cities^states+cityList").apply(context)
+        printJson(context.jsonObject, "After Concat")
+
+        assertEquals("Denver, Boulder", context.queryForValue("$.states[0].cityList"))
+        assertEquals("San Francisco, Santa Cruz", context.queryForValue("$.states[1].cityList"))
+    }
+
+    @Test
+    fun testCopyTransform_MultipleOfSameIntoSingle_absoluteTarget() {
+
+        val context = makeContext()
+
+        /*
+            from { "states": [{ "name": "Colorado", "cities": [{ "name": "Denver" }, { "name": "Boulder" }] , ...] }
+            to   { "states": [{ "name": "Colorado", "cityList": ["Denver", "Boulder"], "cities": [{ "name": "Denver", ... }, { "name": "Boulder", ... }, ...] }
+         */
+
+        // need absolute target path here because the from nodes are at different levels
+        CopyJsonTransform("$.states[*].cities[*].name", "$.states[*]+cityList[+]").apply(context)
+        printJson(context.jsonObject, "After Concat")
+
+        assertEquals(listOf("Denver", "Boulder"), context.queryForValue("$.states[0].cityList"))
+        assertEquals(listOf("San Francisco", "Santa Cruz"), context.queryForValue("$.states[1].cityList"))
+    }
+
+    @Test
+    fun testCopyTransform_MultipleOfSameIntoSingle_relativeTarget() {
+
+        val context = makeContext()
+
+        /*
+            from { "states": [{ "name": "Colorado", "cities": [{ "name": "Denver" }, { "name": "Boulder" }] , ...] }
+            to   { "states": [{ "name": "Colorado", "cityList": ["Denver", "Boulder"], "cities": [{ "name": "Denver", ... }, { "name": "Boulder", ... }, ...] }
+         */
+
+        // need absolute target path here because the from nodes are at different levels
+        CopyJsonTransform("$.states[*].cities[*].name", "@^cities^states+cityList[+]").apply(context)
+        printJson(context.jsonObject, "After Concat")
+
+        assertEquals(listOf("Denver", "Boulder"), context.queryForValue("$.states[0].cityList"))
+        assertEquals(listOf("San Francisco", "Santa Cruz"), context.queryForValue("$.states[1].cityList"))
+    }
 }
