@@ -28,6 +28,7 @@ dependencies {
 
 distributions {
     main {
+        baseName "mapping-engine-streamsets-plugin"
         contents {
             into('lib') {
                 from jar
