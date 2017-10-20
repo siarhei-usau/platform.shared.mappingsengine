@@ -49,9 +49,40 @@ fun DocumentContext.resolveTargetPaths(targetPath: String, matchingPaths: List<S
 
         // compare found nodes against matching source nodes, we need a match for each of them
         val temp = matchingPaths.map { match ->
-            existingPrefixes.filter { match.startsWith(it) || it.startsWith(match) }.map {
+            val relatedMatches = existingPrefixes.filter { match.startsWith(it) || it.startsWith(match) }.map {
                 Pair(match, it)
-            }
+            }.toSet()
+
+            // if the target path is not a prefix match of the found item path, or vis versa, see if we have a reasonable common suffix that guides
+            // which matches should be retained.
+            //
+            // For example:
+            //      $['states'][0]['name'] against $['states'][0]['cities'][0] is a match
+            // but:
+            //      $['states'][0]['name'] against $['states'][1]['cities'][0] is not
+            //
+            val fixedMatches = if (relatedMatches.isEmpty()) {
+                existingPrefixes.filter {
+                    val rawCommonPrefix = it.commonPrefixWith(match) // $['states'][0][  or  $['states'][  or $['states'][12
+                    val commonPrefix = if (rawCommonPrefix.endsWith(']')) rawCommonPrefix else rawCommonPrefix.substringBeforeLast('[') // $['states'][0] or $['states']
+                    if (commonPrefix.isNotBlank()) {
+                        // ok, if remainder starts with array index, this is an invalid prefix match.  We can't split an array property from its index
+                        val remainder = it.substring(commonPrefix.length)
+                        if (remainder.startsWith('[')) {
+                            val part = remainder.substringBefore(']').trim('[',']')
+                            // if not a number, we call this a prefix match
+                            !numRegex.matches(part)
+                        } else {
+                            // unknown remainder
+                            false
+                        }
+                    } else {
+                        // no common prefix at all
+                        false
+                    }
+                }.toSet().map {  Pair(match, it) }
+            } else { relatedMatches }
+            fixedMatches
         }.flatten()
         temp
     } else if (existingPath.startsWith('@')) {

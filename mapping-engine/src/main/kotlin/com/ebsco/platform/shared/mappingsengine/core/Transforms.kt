@@ -100,13 +100,17 @@ class ConcatJsonTransform(val fromPaths: List<String>, val delimiter: String, va
             Pair(it, context.queryAndResolveTargetPaths(it, targetPath, true))
         }
 
-        val allMappingsGroupedByTarget = allMappings.map { mappedPath ->
+        val (mappedSources, unmappedSources) = allMappings.partition { it.second.isNotEmpty() }
+
+        val allMappingsGroupedByTarget = mappedSources.map { mappedPath ->
             mappedPath.second.map {
                 val key = Pair(it.targetBasePath, it.targetUpdatePath)
                 Pair(key, Pair(mappedPath.first, it))
             }
         }.flatten().groupBy { it.first }.mapValues {
-            it.value.map { it.second }.map { it.first to it.second.sourcePath }.toMap()
+            it.value.map { it.second }.map {
+                it.first to it.second.sourcePath
+            }.toMap()
         }
 
         // we now have a map of target path, to a map of source paths to actual value path (in the resolved object)

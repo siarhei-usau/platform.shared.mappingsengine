@@ -1,7 +1,9 @@
 package com.ebsco.platform.shared.mappingsengine.core
 
+import org.junit.Ignore
 import org.junit.Test
 import kotlin.test.assertEquals
+import kotlin.test.fail
 
 class TestTransforms : BasePathTest() {
     private fun makeContext(): JsonTransformerContext {
@@ -133,7 +135,7 @@ class TestTransforms : BasePathTest() {
     }
 
     @Test
-    fun testConcatTransform_MixedObjectConcat() {
+    fun testConcatTransform_MixedObjectConcat_AbsoluteTarget() {
 
         val context = makeContext()
 
@@ -143,13 +145,12 @@ class TestTransforms : BasePathTest() {
                                                                { "name": "Boulder", "cityState": "Boulder, Colorado" }] , ...] }
          */
 
-
-        // TODO: this is failing until TestPathUtils all pass, one case is broken there, see testCasesFailingFromConcatTesting()
-
         CopyJsonTransform("$.states[*].name", "@^states+cities[*].stateName").apply(context)
         printJson(context.jsonObject, "After Copy")
 
         val fromPaths = listOf("$.states[*].cities[*].name", "$.states[*].cities[*].stateName")
+
+        // absolute target path is the safest approach...
         ConcatJsonTransform(fromPaths, ", ", "$.states[*].cities[*]+cityState").apply(context)
         printJson(context.jsonObject, "After Concat")
 
@@ -160,6 +161,74 @@ class TestTransforms : BasePathTest() {
         assertEquals("Boulder, Colorado", context.queryForValue("$.states[0].cities[1].cityState"))
         assertEquals("San Francisco, California", context.queryForValue("$.states[1].cities[0].cityState"))
         assertEquals("Santa Cruz, California", context.queryForValue("$.states[1].cities[1].cityState"))
+    }
+
+    @Test
+    fun testConcatTransform_MixedObjectConcat_RelativeTarget() {
+
+        val context = makeContext()
+
+        /*
+            from { "states": [{ "name": "Colorado", "cities": [{ "name": "Denver" }, { "name": "Boulder" }] , ...] }
+            to   { "states": [{ "name": "Colorado", "cities": [{ "name": "Denver", "cityState": "Denver, Colorado" },
+                                                               { "name": "Boulder", "cityState": "Boulder, Colorado" }] , ...] }
+         */
+
+        CopyJsonTransform("$.states[*].name", "@^states+cities[*].stateName").apply(context)
+        printJson(context.jsonObject, "After Copy")
+
+        val fromPaths = listOf("$.states[*].cities[*].name", "$.states[*].cities[*].stateName")
+
+        // relative target path is trustworthy here because all the from nodes are at the same level
+        ConcatJsonTransform(fromPaths, ", ", "@^cities+cityState").apply(context)
+        printJson(context.jsonObject, "After Concat")
+
+        DeleteJsonTransform("$.states[*].cities[*].stateName")
+        printJson(context.jsonObject, "After Delete")
+
+        assertEquals("Denver, Colorado", context.queryForValue("$.states[0].cities[0].cityState"))
+        assertEquals("Boulder, Colorado", context.queryForValue("$.states[0].cities[1].cityState"))
+        assertEquals("San Francisco, California", context.queryForValue("$.states[1].cities[0].cityState"))
+        assertEquals("Santa Cruz, California", context.queryForValue("$.states[1].cities[1].cityState"))
+    }
+
+    @Test
+    fun testConcatTransform_MixedObjectConcat() {
+
+        val context = makeContext()
+
+        /*
+            from { "states": [{ "name": "Colorado", "cities": [{ "name": "Denver" }, { "name": "Boulder" }] , ...] }
+            to   { "states": [{ "name": "Colorado", "cities": [{ "name": "Denver", "cityState": "Denver, Colorado" },
+                                                               { "name": "Boulder", "cityState": "Boulder, Colorado" }] , ...] }
+         */
+
+        val fromPaths = listOf("$.states[*].cities[*].name", "$.states[*].name")
+
+        // need absolute target path here because the from nodes are at different levels
+        ConcatJsonTransform(fromPaths, ", ", "$.states[*].cities[*]+cityState").apply(context)
+        printJson(context.jsonObject, "After Concat")
+
+        assertEquals("Denver, Colorado", context.queryForValue("$.states[0].cities[0].cityState"))
+        assertEquals("Boulder, Colorado", context.queryForValue("$.states[0].cities[1].cityState"))
+        assertEquals("San Francisco, California", context.queryForValue("$.states[1].cities[0].cityState"))
+        assertEquals("Santa Cruz, California", context.queryForValue("$.states[1].cities[1].cityState"))
+    }
+
+    @Test
+    fun testConcatTransform_MixedObjectConcat_BadRelativeTarget() {
+
+        val context = makeContext()
+
+        val fromPaths = listOf("$.states[*].cities[*].name", "$.states[*].name")
+
+        try {
+            // this relative path is bad, because it will mean different things
+            ConcatJsonTransform(fromPaths, ", ", "@^cities+cityState").apply(context)
+            fail("This should cause a failed path, since the path changes depending on the source node, and is invalid at times")
+        } catch (ex: IllegalStateException) {
+            // success!
+        }
     }
 
 
