@@ -18,7 +18,8 @@ enum class Groups(val groupName: String) : Label {
 
 @GenerateResourceBundle
 enum class Errors(val msg: String) : ErrorCode {
-    EBSCO_INVALID_CONFIG("Configuration is invalid because of {}");
+    EBSCO_INVALID_CONFIG("Configuration is invalid because of {}"),
+    EBSCO_RECORD_ERROR("Record transformation failed due to: {}");
 
     override fun getMessage(): String = msg
     override fun getCode(): String = name

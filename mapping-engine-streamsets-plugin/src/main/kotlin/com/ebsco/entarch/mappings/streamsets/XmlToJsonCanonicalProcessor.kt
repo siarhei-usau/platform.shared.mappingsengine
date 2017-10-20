@@ -7,6 +7,7 @@ import com.ebsco.platform.shared.mappingsengine.xml.XmlToRecordParserConfig
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.jayway.jsonpath.spi.json.JacksonJsonProvider
 import com.streamsets.pipeline.api.*
+import com.streamsets.pipeline.api.base.OnRecordErrorException
 import com.streamsets.pipeline.api.base.SingleLaneRecordProcessor
 import org.slf4j.LoggerFactory
 import java.io.InputStream
@@ -39,7 +40,9 @@ class XmlToJsonCanonicalProcessor : SingleLaneRecordProcessor() {
     var outJsonField: String? = null
 
 
-    private val cfgJson by lazy { MappingsEngineJsonConfig.fromJson(mappingInstructions!!) }
+    private val cfgJson by lazy {
+        MappingsEngineJsonConfig.fromJson(mappingInstructions!!)
+    }
 
     private val xml2jsonCfg by lazy { cfgJson.configuration.xml2json }
 
@@ -82,30 +85,34 @@ class XmlToJsonCanonicalProcessor : SingleLaneRecordProcessor() {
     fun String.mustStartWith(s: String) = if (this.startsWith(s)) this else s + this
 
     fun fixXmlToBetterJson(record: Record, inputFieldName: String = rawXmlField!!): Record {
-        val inputFieldNameFixed = inputFieldName.takeIf { it.isNotBlank() }?.mustStartWith("/")
-                ?: "/fileRef"
-        val inputField = record.get(inputFieldNameFixed)
+        try {
+            val inputFieldNameFixed = inputFieldName.takeIf { it.isNotBlank() }?.mustStartWith("/")
+                    ?: "/fileRef"
+            val inputField = record.get(inputFieldNameFixed)
 
-        val inputStream = if (inputField.type == Field.Type.STRING) {
-            inputField.valueAsString.toByteArray().inputStream()
-        } else {
-            inputField.valueAsFileRef.createInputStream(context, InputStream::class.java)
+            val inputStream = if (inputField.type == Field.Type.STRING) {
+                inputField.valueAsString.toByteArray().inputStream()
+            } else {
+                inputField.valueAsFileRef.createInputStream(context, InputStream::class.java)
+            }
+
+            val (xmlField, xmlData) = inputStream.use { parser.parse(it) }
+
+            @Suppress("UNCHECKED_CAST")
+            val jsonObject = mapOf(xmlField to xmlData as Map<String, Any>)
+
+            mappings.processDocument(jsonObject)
+
+            // we go direct to a JSON field, which can be parsed by streamsets if desired to be operated upon further.
+
+            val json = jsonMapper.writerWithDefaultPrettyPrinter().writeValueAsString(jsonObject)
+
+            record.set(outJsonField ?: "/json", Field.create(json))
+
+            return record
+        } catch (ex: Throwable) {
+            throw OnRecordErrorException(record, Errors.EBSCO_RECORD_ERROR, ex.message)
         }
-
-        val (xmlField, xmlData) = inputStream.use { parser.parse(it) }
-
-        @Suppress("UNCHECKED_CAST")
-        val jsonObject = mapOf(xmlField to xmlData as Map<String, Any>)
-
-        mappings.processDocument(jsonObject)
-
-        // we go direct to a JSON field, which can be parsed by streamsets if desired to be operated upon further.
-
-        val json = jsonMapper.writerWithDefaultPrettyPrinter().writeValueAsString(jsonObject)
-
-        record.set(outJsonField ?: "/json", Field.create(json))
-
-        return record
     }
 
     override fun process(record: Record, batchMaker: SingleLaneBatchMaker) {
