@@ -1,24 +1,20 @@
 package com.ebsco.entarch.mappings.streamsets
 
-import _ss_com.streamsets.datacollector.json.JsonRecordWriterImpl
-import com.ebsco.platform.shared.mappingsengine.xml.XmlToRecordParser
-import com.ebsco.platform.shared.mappingsengine.xml.XmlToRecordParserConfig
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.jayway.jsonpath.Configuration
 import com.jayway.jsonpath.JsonPath
 import com.jayway.jsonpath.Option
-import com.jayway.jsonpath.spi.json.JacksonJsonNodeJsonProvider
 import com.jayway.jsonpath.spi.json.JacksonJsonProvider
 import com.jayway.jsonpath.spi.mapper.JacksonMappingProvider
 import com.streamsets.pipeline.api.Field
 import com.streamsets.pipeline.api.FileRef
 import com.streamsets.pipeline.api.Stage
-import com.streamsets.pipeline.api.ext.json.Mode
 import com.streamsets.pipeline.sdk.ProcessorRunner
 import com.streamsets.pipeline.sdk.RecordCreator
 import org.junit.Test
-import java.io.*
+import java.io.File
+import java.io.InputStream
 import kotlin.test.assertEquals
 
 // TODO: ok, these were more development harnesses than tests, change this to be more realistic tests
@@ -51,7 +47,7 @@ class XmlToJsonCanonicalProcessorTests {
             val final = output.records["output"]!![0]
 
             final.delete(xmlInputFieldName)
-            final.escapedFieldPaths.toList().forEach{ println("FIELD: $it") }
+            final.escapedFieldPaths.toList().forEach { println("FIELD: $it") }
 
             val finalJson = final.get(outJsonFieldName).valueAsString
 
@@ -110,7 +106,7 @@ class XmlToJsonCanonicalProcessorTests {
             val final = output.records["output"]!![0]
 
             final.delete(xmlInputFieldName)
-            final.escapedFieldPaths.toList().forEach{ println("FIELD: $it") }
+            final.escapedFieldPaths.toList().forEach { println("FIELD: $it") }
 
             val finalJson = final.get(outJsonFieldName).valueAsString
 

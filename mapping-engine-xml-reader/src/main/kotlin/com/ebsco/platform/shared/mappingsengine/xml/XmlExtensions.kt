@@ -12,12 +12,13 @@ import javax.xml.xpath.XPathConstants
 import javax.xml.xpath.XPathExpression
 
 
-internal val Node.simplePath: String get() {
-    return generateSequence(this) {
-        it.parentNode
-    }.toList().asReversed().drop(1).map { it.localName }.joinToString("/")
+internal val Node.simplePath: String
+    get() {
+        return generateSequence(this) {
+            it.parentNode
+        }.toList().asReversed().drop(1).map { it.localName }.joinToString("/")
 
-}
+    }
 
 internal val Node.isTextNode get() = nodeType == Node.TEXT_NODE
 internal val Node.isElementNode get() = nodeType == Node.ELEMENT_NODE
@@ -44,8 +45,8 @@ internal fun Node.asXmlString(): String {
     return writer.toString().trimIndent()
 }
 
-internal fun NodeList.toSeq(): Sequence<Node> = (0..this.length-1).asSequence().map { this.item(it) }
-internal fun NodeList.toList(): List<Node> = (0..this.length-1).map { this.item(it) }
+internal fun NodeList.toSeq(): Sequence<Node> = (0..this.length - 1).asSequence().map { this.item(it) }
+internal fun NodeList.toList(): List<Node> = (0..this.length - 1).map { this.item(it) }
 
 internal fun Node.cleanEmptyTextNodes() {
     val children = this.childNodes

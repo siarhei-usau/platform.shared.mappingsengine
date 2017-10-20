@@ -72,7 +72,7 @@ fun DocumentContext.resolveTargetPaths(targetPath: String, matchingPaths: List<S
 
             // and now . or [] starts downwards again...
 
-            val earliestDownSymbol = startingPath.indexOfAny(charArrayOf('.','['))
+            val earliestDownSymbol = startingPath.indexOfAny(charArrayOf('.', '['))
 
             val upwardsParts = (if (earliestDownSymbol >= 0) startingPath.substring(0, earliestDownSymbol) else startingPath).split('^')
             val downwardsPart = if (earliestDownSymbol >= 0) startingPath.substring(earliestDownSymbol).removePrefix(".") else ""
@@ -94,12 +94,12 @@ fun DocumentContext.resolveTargetPaths(targetPath: String, matchingPaths: List<S
 
                     // we are on an array index, so from perspective of popping up, start at the array
                     if (numRegex.matches(inspectPossibleArrayIndex)) {
-                       tempParts = tempParts.dropLast(1)
-                       // ['a']['b'][1]  is now ['a']['b']
+                        tempParts = tempParts.dropLast(1)
+                        // ['a']['b'][1]  is now ['a']['b']
 
-                       if (tempParts.isEmpty()) {
+                        if (tempParts.isEmpty()) {
                             throw IllegalStateException("Cannot path upwards using $targetPath from starting $matchPath, attempted to pop up past the first element")
-                       }
+                        }
                     }
 
                     // pop up to the possible landing point
@@ -113,7 +113,7 @@ fun DocumentContext.resolveTargetPaths(targetPath: String, matchingPaths: List<S
                         if (tempParts.size < 2) {
                             throw IllegalStateException("Cannot path upwards using $targetPath from starting $matchPath, unexpected array index as first element")
                         } else {
-                            tempParts[tempParts.size-2]
+                            tempParts[tempParts.size - 2]
                         }
                     } else {
                         inspectLastPartAgain
@@ -262,7 +262,7 @@ fun DocumentContext.applyUpdatePath(basePath: String, updatePath: String, jsonFr
 
                     when (idx) {
                         "*", "*+" -> {
-                            (0..arraySize-1).forEach { i ->
+                            (0..arraySize - 1).forEach { i ->
                                 if (last) {
                                     JSON.setArrayIndex(arrayNode, i, jsonFragment)
                                 } else {

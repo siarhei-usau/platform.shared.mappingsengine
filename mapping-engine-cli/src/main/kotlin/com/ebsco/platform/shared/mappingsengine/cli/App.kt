@@ -6,14 +6,14 @@ import com.ebsco.platform.shared.mappingsengine.xml.XmlToRecordParser
 import com.ebsco.platform.shared.mappingsengine.xml.XmlToRecordParserConfig
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.rvesse.airline.HelpOption
+import com.github.rvesse.airline.SingleCommand
+import com.github.rvesse.airline.annotations.Command
+import com.github.rvesse.airline.annotations.Option
+import com.github.rvesse.airline.annotations.restrictions.Required
+import com.github.rvesse.airline.parser.errors.ParseOptionMissingException
 import com.jayway.jsonpath.spi.json.JacksonJsonProvider
 import java.io.File
 import javax.inject.Inject
-import com.github.rvesse.airline.SingleCommand;
-import com.github.rvesse.airline.annotations.Command;
-import com.github.rvesse.airline.annotations.Option;
-import com.github.rvesse.airline.annotations.restrictions.Required
-import com.github.rvesse.airline.parser.errors.ParseOptionMissingException
 
 class MappingEngineCliApp(val configFile: File, val xmlInputFile: File, val jsonOutputFile: File?) {
     companion object {
@@ -25,8 +25,7 @@ class MappingEngineCliApp(val configFile: File, val xmlInputFile: File, val json
             val result = SingleCommand.singleCommand(Process::class.java).let {
                 try {
                     it.parseWithResult(*args)
-                }
-                catch (pme: ParseOptionMissingException) {
+                } catch (pme: ParseOptionMissingException) {
                     println(pme.message)
                     System.exit(-1)
                     null
@@ -53,7 +52,7 @@ class MappingEngineCliApp(val configFile: File, val xmlInputFile: File, val json
         @Required
         lateinit var inputXmlFilename: String
 
-        @Option(name = arrayOf("--config", "-c"),title = "configuration", description = "configuration filename for mappings instructions")
+        @Option(name = arrayOf("--config", "-c"), title = "configuration", description = "configuration filename for mappings instructions")
         @Required
         lateinit var configFilename: String
 
@@ -85,7 +84,7 @@ class MappingEngineCliApp(val configFile: File, val xmlInputFile: File, val json
 
         val xml2jsonCfg = cfgFile.configuration.xml2json
         val parser = XmlToRecordParser(XmlToRecordParserConfig(
-             preserveNestedTextElements_ByXPath = xml2jsonCfg.embedLiteralXmlAtPaths,
+                preserveNestedTextElements_ByXPath = xml2jsonCfg.embedLiteralXmlAtPaths,
                 preserveNestedTextElements_AutoDetect = xml2jsonCfg.autoDetectMixedContent,
                 preserveNestedTextElements_UnhandledResultInError = xml2jsonCfg.unhandledMixedContentIsError,
                 forceSingleValueNodes_ByXPath = xml2jsonCfg.forceSingleValueElementAtPaths,

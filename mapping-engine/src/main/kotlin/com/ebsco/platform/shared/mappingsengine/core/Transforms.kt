@@ -29,6 +29,7 @@ open class JsonTransformerContext(val jsonObject: Any, val jpathCfg: Configurati
 
     fun queryAndResolveTargetPaths(jsonPath: String, targetJsonPath: String, allowNonMatching: Boolean = false): List<ResolvedPaths>
             = resolveTargetPaths(targetJsonPath, queryForPaths(jsonPath), allowNonMatching)
+
     fun queryAndResolveTargetPaths(jsonPath: JsonPath, targetJsonPath: String, allowNonMatching: Boolean = false): List<ResolvedPaths>
             = resolveTargetPaths(targetJsonPath, queryForPaths(jsonPath), allowNonMatching)
 
@@ -52,10 +53,10 @@ class RenameJsonTransform(val fromPath: String, val targetPath: String) : JsonTr
     }
 }
 
-class DeleteJsonTransform(val deletePath: String): JsonTransformer {
+class DeleteJsonTransform(val deletePath: String) : JsonTransformer {
     val compiledSourceJsonPath = JsonPath.compile(deletePath)
     override fun apply(context: JsonTransformerContext) {
-       context.queryForPaths(compiledSourceJsonPath).forEach { context.deleteValue(it) }
+        context.queryForPaths(compiledSourceJsonPath).forEach { context.deleteValue(it) }
     }
 }
 
@@ -122,7 +123,7 @@ class ConcatJsonTransform(val fromPaths: List<String>, val delimiter: String, va
 }
 
 class LookupJsonTransform(val lookupResource: String, val filters: List<LookupFilter>, val mode: String = "merge",
-                          val targetPath: String, val jsonTemplate: Map<String, Any>): JsonTransformer {
+                          val targetPath: String, val jsonTemplate: Map<String, Any>) : JsonTransformer {
     override fun apply(context: JsonTransformerContext) {
         // TODO, port from prototype
     }

@@ -3,7 +3,7 @@ package com.ebsco.platform.shared.mappingsengine.core
 import org.junit.Test
 import kotlin.test.assertEquals
 
-class TestTransforms: BasePathTest() {
+class TestTransforms : BasePathTest() {
     private fun makeContext(): JsonTransformerContext {
         return JsonTransformerContext(jpathCtx.json(), jpathConfig, jvalueConfig, jvalueListConfig)
     }

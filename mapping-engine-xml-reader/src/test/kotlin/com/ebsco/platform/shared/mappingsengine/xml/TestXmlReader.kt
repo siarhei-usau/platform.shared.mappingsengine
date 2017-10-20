@@ -2,11 +2,7 @@ package com.ebsco.platform.shared.mappingsengine.xml
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.jayway.jsonpath.Configuration
-import com.jayway.jsonpath.JsonPath
-import com.jayway.jsonpath.Option
 import com.jayway.jsonpath.spi.json.JacksonJsonProvider
-import com.jayway.jsonpath.spi.mapper.JacksonMappingProvider
 import org.junit.Test
 import java.io.ByteArrayInputStream
 import kotlin.test.assertEquals

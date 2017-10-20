@@ -114,27 +114,27 @@ class XmlToRecordParser(val config: XmlToRecordParserConfig = XmlToRecordParserC
                         val elementsOnly = xmlNode.childNodeSeq.filterIsInstance<Element>()
 
                         val subElementsAsFields = elementsOnly.map { subXmlNode ->
-                             val subField = buildFieldsOf(subXmlNode, preserveNestedTextInNodes, forceSingleValueNodes, forceElevateTextNodes)
-                             if (subField != null) {
-                                 val (subNodeName, subJsonNode) = subField
-                                 if (subXmlNode in forceElevateTextNodes) {
-                                     // elevate the text node into the parent object, if possible.  If conflicting structure, fail the process
-                                     if (JSON.isMap(jsonNode)) {
-                                         if (JSON.isMap(subJsonNode) 
-                                                 && config.textNodeName == JSON.getPropertyKeys(subJsonNode).singleOrNull()) {
-                                             Triple(subNodeName, JSON.getMapValue(subJsonNode, config.textNodeName), subXmlNode)
-                                         } else {
-                                             throw IllegalStateException("Expected only a #text node in ${subXmlNode.simplePath}")
-                                         }
-                                     } else {
-                                         throw IllegalStateException("Expected parent to be map object to elevate text node into from ${subXmlNode.simplePath}")
-                                     }
-                                 } else {
-                                     Triple(subNodeName, subJsonNode, subXmlNode)
-                                 }
-                             } else {
-                                 null
-                             }
+                            val subField = buildFieldsOf(subXmlNode, preserveNestedTextInNodes, forceSingleValueNodes, forceElevateTextNodes)
+                            if (subField != null) {
+                                val (subNodeName, subJsonNode) = subField
+                                if (subXmlNode in forceElevateTextNodes) {
+                                    // elevate the text node into the parent object, if possible.  If conflicting structure, fail the process
+                                    if (JSON.isMap(jsonNode)) {
+                                        if (JSON.isMap(subJsonNode)
+                                                && config.textNodeName == JSON.getPropertyKeys(subJsonNode).singleOrNull()) {
+                                            Triple(subNodeName, JSON.getMapValue(subJsonNode, config.textNodeName), subXmlNode)
+                                        } else {
+                                            throw IllegalStateException("Expected only a #text node in ${subXmlNode.simplePath}")
+                                        }
+                                    } else {
+                                        throw IllegalStateException("Expected parent to be map object to elevate text node into from ${subXmlNode.simplePath}")
+                                    }
+                                } else {
+                                    Triple(subNodeName, subJsonNode, subXmlNode)
+                                }
+                            } else {
+                                null
+                            }
                         }.filterNotNull()
 
                         // subElements become arrays, we group all of the same elements together by the XML node name
@@ -149,7 +149,7 @@ class XmlToRecordParser(val config: XmlToRecordParserConfig = XmlToRecordParserC
                                             && JSON.isMap(innerList.first())
                                             && config.textNodeName == JSON.getPropertyKeys(innerList.first()).singleOrNull()
 
-                                    val subField = if (forceToSingleValue ||isOnlyValueText ) {
+                                    val subField = if (forceToSingleValue || isOnlyValueText) {
                                         innerList.first()
                                     } else {
                                         val innerArray = JSON.createArray().apply {

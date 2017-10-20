@@ -25,7 +25,7 @@ data class MappingsEngineJsonConfig(val metadata: EngineMetadata, val transforms
 data class EngineMetadata(val id: String, val version: String, val primaryKey: String)
 
 data class TransformsConfig(val type: String, val id: String?, val notes: String?, val config: Map<String, Any>) {
-    inline fun <reified T: Any> bind(): T {
+    inline fun <reified T : Any> bind(): T {
         return jacksonObjectMapper().convertValue(config)
     }
 }
@@ -33,12 +33,12 @@ data class TransformsConfig(val type: String, val id: String?, val notes: String
 data class SubsystemConfiguration(val xml2json: Xml2JsonConfig)
 
 data class Xml2JsonConfig(val embedLiteralXmlAtPaths: List<String> = emptyList(),
-                     val autoDetectMixedContent: Boolean = false,
-                     val unhandledMixedContentIsError: Boolean = true,
-                     val forceSingleValueElementAtPaths: List<String> = emptyList(),
-                     val forceElevateTextNodesAtPaths: List<String> = emptyList(),
-                     val forceElevateTextNodesAsSingleValue: Boolean = false,
-                     val textNodeName: String = "value",
-                     val attributeNodePrefix: String = "",
-                     val preserveAttributePrefixes: List<String> = listOf("xmlns", "xml"))
+                          val autoDetectMixedContent: Boolean = false,
+                          val unhandledMixedContentIsError: Boolean = true,
+                          val forceSingleValueElementAtPaths: List<String> = emptyList(),
+                          val forceElevateTextNodesAtPaths: List<String> = emptyList(),
+                          val forceElevateTextNodesAsSingleValue: Boolean = false,
+                          val textNodeName: String = "value",
+                          val attributeNodePrefix: String = "",
+                          val preserveAttributePrefixes: List<String> = listOf("xmlns", "xml"))
 

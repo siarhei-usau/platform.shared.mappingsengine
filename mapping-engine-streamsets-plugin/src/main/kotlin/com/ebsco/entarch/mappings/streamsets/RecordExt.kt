@@ -5,115 +5,115 @@ import com.streamsets.pipeline.api.Record
 import com.streamsets.pipeline.api.impl.Utils
 
 fun parseRecordPath(path: String): List<PathStep> {
-        val fieldPath = EscapeUtil.standardizePathForParse(path, true)
-        val elements = mutableListOf(PathStep.ROOT)
+    val fieldPath = EscapeUtil.standardizePathForParse(path, true)
+    val elements = mutableListOf(PathStep.ROOT)
 
-        if (!fieldPath.isEmpty()) {
-            val chars = fieldPath.toCharArray()
-            var requiresStart = true
-            var requiresName = false
-            var requiresIndex = false
-            var singleQuote = false
-            var doubleQuote = false
-            val collector = StringBuilder()
-            var pos = 0
+    if (!fieldPath.isEmpty()) {
+        val chars = fieldPath.toCharArray()
+        var requiresStart = true
+        var requiresName = false
+        var requiresIndex = false
+        var singleQuote = false
+        var doubleQuote = false
+        val collector = StringBuilder()
+        var pos = 0
 
-            endlessly@ while (true) {
-                if (pos >= chars.size) {
-                    if (singleQuote || doubleQuote) {
-                        throw IllegalArgumentException(Utils.format("Invalid fieldPath '{}' at char '{}' ({})", *arrayOf(fieldPath, 0, "quotes are not properly closed")))
-                    }
-
-                    if (pos < chars.size) {
-                        throw IllegalArgumentException(Utils.format("Invalid fieldPath '{}' at char '{}'", *arrayOf(fieldPath, pos)))
-                    }
-
-                    if (collector.length > 0) {
-                        elements.add(PathStep.createMapElement(collector.toString()))
-                    }
-                    break
+        endlessly@ while (true) {
+            if (pos >= chars.size) {
+                if (singleQuote || doubleQuote) {
+                    throw IllegalArgumentException(Utils.format("Invalid fieldPath '{}' at char '{}' ({})", *arrayOf(fieldPath, 0, "quotes are not properly closed")))
                 }
 
-                if (requiresStart) {
-                    requiresStart = false
-                    requiresName = false
-                    requiresIndex = false
-                    singleQuote = false
-                    doubleQuote = false
-                    when (chars[pos]) {
-                        '/' -> requiresName = true
-                        '[' -> requiresIndex = true
-                        else -> throw IllegalArgumentException(Utils.format("Invalid fieldPath '{}' at char '{}' ({})", *arrayOf(fieldPath, 0, "field path needs to start with '[' or '/'")))
-                    }
-                } else if (requiresName) {
-                    when (chars[pos]) {
-                        '"' -> if (pos != 0 && chars[pos - 1] == '\\') {
-                            collector.setLength(collector.length - 1)
-                            collector.append(chars[pos])
-                        } else if (!singleQuote) {
-                            doubleQuote = !doubleQuote
-                        } else {
-                            collector.append(chars[pos])
-                        }
-                        '\'' -> if (pos != 0 && chars[pos - 1] == '\\') {
-                            collector.setLength(collector.length - 1)
-                            collector.append(chars[pos])
-                        } else if (!doubleQuote) {
-                            singleQuote = !singleQuote
-                        } else {
-                            collector.append(chars[pos])
-                        }
-                        '/', '[', ']' -> if (!singleQuote && !doubleQuote) {
-                            if (chars.size <= pos + 1) {
-                                throw IllegalArgumentException(Utils.format("Invalid fieldPath '{}' at char '{}' ({})", *arrayOf(fieldPath, pos, "field name can't be empty")))
-                            }
-
-                            if (chars[pos] == chars[pos + 1]) {
-                                collector.append(chars[pos])
-                                ++pos
-                            } else {
-                                elements.add(PathStep.createMapElement(collector.toString()))
-                                requiresStart = true
-                                collector.setLength(0)
-                                --pos
-                            }
-                        } else {
-                            collector.append(chars[pos])
-                        }
-                        else -> collector.append(chars[pos])
-                    }
-                } else if (requiresIndex) {
-                    when (chars[pos]) {
-                        '*', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' -> collector.append(chars[pos])
-                        ']' -> {
-                            val indexString = collector.toString()
-
-                            try {
-                                var index = 0
-                                if ("*" != indexString) {
-                                    index = Integer.parseInt(indexString)
-                                }
-
-                                if (index < 0) {
-                                    throw IllegalArgumentException(Utils.format("Invalid fieldPath '{}' at char '{}'", *arrayOf(fieldPath, pos)))
-                                }
-
-                                elements.add(PathStep.createArrayElement(index))
-                                requiresStart = true
-                                collector.setLength(0)
-                            } catch (var13: NumberFormatException) {
-                                throw IllegalArgumentException(Utils.format("Invalid fieldPath '{}' at char '{}' ('{}' needs to be a number or '*')", *arrayOf(fieldPath, pos, indexString)), var13)
-                            }
-                        }
-                        else -> throw IllegalArgumentException(Utils.format("Invalid fieldPath '{}' at char '{}' ({})", *arrayOf(fieldPath, pos, "only numbers and '*' allowed between '[' and ']'")))
-                    }
+                if (pos < chars.size) {
+                    throw IllegalArgumentException(Utils.format("Invalid fieldPath '{}' at char '{}'", *arrayOf(fieldPath, pos)))
                 }
 
-                ++pos
+                if (collector.length > 0) {
+                    elements.add(PathStep.createMapElement(collector.toString()))
+                }
+                break
             }
-        }
 
-        return elements
+            if (requiresStart) {
+                requiresStart = false
+                requiresName = false
+                requiresIndex = false
+                singleQuote = false
+                doubleQuote = false
+                when (chars[pos]) {
+                    '/' -> requiresName = true
+                    '[' -> requiresIndex = true
+                    else -> throw IllegalArgumentException(Utils.format("Invalid fieldPath '{}' at char '{}' ({})", *arrayOf(fieldPath, 0, "field path needs to start with '[' or '/'")))
+                }
+            } else if (requiresName) {
+                when (chars[pos]) {
+                    '"' -> if (pos != 0 && chars[pos - 1] == '\\') {
+                        collector.setLength(collector.length - 1)
+                        collector.append(chars[pos])
+                    } else if (!singleQuote) {
+                        doubleQuote = !doubleQuote
+                    } else {
+                        collector.append(chars[pos])
+                    }
+                    '\'' -> if (pos != 0 && chars[pos - 1] == '\\') {
+                        collector.setLength(collector.length - 1)
+                        collector.append(chars[pos])
+                    } else if (!doubleQuote) {
+                        singleQuote = !singleQuote
+                    } else {
+                        collector.append(chars[pos])
+                    }
+                    '/', '[', ']' -> if (!singleQuote && !doubleQuote) {
+                        if (chars.size <= pos + 1) {
+                            throw IllegalArgumentException(Utils.format("Invalid fieldPath '{}' at char '{}' ({})", *arrayOf(fieldPath, pos, "field name can't be empty")))
+                        }
+
+                        if (chars[pos] == chars[pos + 1]) {
+                            collector.append(chars[pos])
+                            ++pos
+                        } else {
+                            elements.add(PathStep.createMapElement(collector.toString()))
+                            requiresStart = true
+                            collector.setLength(0)
+                            --pos
+                        }
+                    } else {
+                        collector.append(chars[pos])
+                    }
+                    else -> collector.append(chars[pos])
+                }
+            } else if (requiresIndex) {
+                when (chars[pos]) {
+                    '*', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' -> collector.append(chars[pos])
+                    ']' -> {
+                        val indexString = collector.toString()
+
+                        try {
+                            var index = 0
+                            if ("*" != indexString) {
+                                index = Integer.parseInt(indexString)
+                            }
+
+                            if (index < 0) {
+                                throw IllegalArgumentException(Utils.format("Invalid fieldPath '{}' at char '{}'", *arrayOf(fieldPath, pos)))
+                            }
+
+                            elements.add(PathStep.createArrayElement(index))
+                            requiresStart = true
+                            collector.setLength(0)
+                        } catch (var13: NumberFormatException) {
+                            throw IllegalArgumentException(Utils.format("Invalid fieldPath '{}' at char '{}' ('{}' needs to be a number or '*')", *arrayOf(fieldPath, pos, indexString)), var13)
+                        }
+                    }
+                    else -> throw IllegalArgumentException(Utils.format("Invalid fieldPath '{}' at char '{}' ({})", *arrayOf(fieldPath, pos, "only numbers and '*' allowed between '[' and ']'")))
+                }
+            }
+
+            ++pos
+        }
+    }
+
+    return elements
 }
 
 enum class PathStepType {
@@ -162,7 +162,7 @@ fun Record.query(path: String): List<Pair<String, Field>> {
     val lastPart = parts.size - 1
 
 
-   return emptyList()
+    return emptyList()
 }
 
 private fun Record.applyRenameMapping(fromPath: String, toPath: String) {
@@ -210,7 +210,7 @@ internal fun Record.ensureFieldPathIsSettable(path: String) {
 
             // make sure we have enough elements to include this index
             val contents = newFieldList.valueAsList
-            while (contents.size < arrayIndex+1) {
+            while (contents.size < arrayIndex + 1) {
                 contents.add(Field.create(mutableMapOf<String, Field>()))
             }
 

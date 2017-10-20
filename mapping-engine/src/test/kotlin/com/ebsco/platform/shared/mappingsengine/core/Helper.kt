@@ -1,6 +1,5 @@
 package com.ebsco.platform.shared.mappingsengine.core
 
-import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.jayway.jsonpath.Configuration
 import com.jayway.jsonpath.JsonPath
@@ -71,7 +70,7 @@ abstract class BasePathTest {
             .options(Option.AS_PATH_LIST, Option.SUPPRESS_EXCEPTIONS)
             .jsonProvider(JacksonJsonProvider())
             .build()
-    protected val jpathPaths =  JsonPath.using(jpathConfig)
+    protected val jpathPaths = JsonPath.using(jpathConfig)
 
     protected val jpathCtx = jpathPaths.parse(json)
 
