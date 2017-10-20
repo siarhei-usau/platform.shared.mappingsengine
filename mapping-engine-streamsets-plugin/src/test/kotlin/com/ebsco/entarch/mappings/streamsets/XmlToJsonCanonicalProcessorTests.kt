@@ -38,7 +38,7 @@ class XmlToJsonCanonicalProcessorTests {
             val record = RecordCreator.create()
             record.set(Field.create(mutableMapOf<String, Field>()))
 
-            record.write(xmlInputFieldName, realisticXml.trim())
+            record.set(xmlInputFieldName, Field.create(realisticXml.trim()))
 
             val output = runner.runProcess(listOf(record))
 
@@ -97,7 +97,6 @@ class XmlToJsonCanonicalProcessorTests {
 
             }
             record.set(xmlInputFieldName, Field.create(Field.Type.FILE_REF, fakeFileRef))
-            record.write(xmlInputFieldName, realisticXml.trim())
 
             val output = runner.runProcess(listOf(record))
 
@@ -266,5 +265,5 @@ class XmlToJsonCanonicalProcessorTests {
       </book-part>
    </body>
 </book>
-"""
+""".trim()
 }
