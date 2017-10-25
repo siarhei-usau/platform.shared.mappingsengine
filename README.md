@@ -32,6 +32,11 @@ The distributions can be found in:
 |StreamSets|./mapping-engine-streamsets-plugin/build/distributions|
 |Test CLI|./mapping-engine-cli/build/distributions|
 
+## Developing within an IDE (Eclipse or Intellij IDEA)
+
+For development, the Kotlin and Lombok plugins are required for your IDE.  These are available for Intellij IDEA and 
+possibly other IDE's.
+
 ## Testing the Mapper from the Command-Line
 
 You can either unzip/untar the distribution created by the main build, and run the script in the `bin` directory, or you
