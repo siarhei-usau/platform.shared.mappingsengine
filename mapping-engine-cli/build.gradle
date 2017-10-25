@@ -7,5 +7,6 @@ dependencies {
     compile project(':mapping-engine')
     compile project(':mapping-engine-xml-reader')
 
-    compile group: 'com.github.rvesse', name: 'airline', version: version_airline
+    compile group: 'com.beust', name: 'jcommander', version: version_jcommander
+    // compile group: 'com.github.rvesse', name: 'airline', version: version_airline
 }

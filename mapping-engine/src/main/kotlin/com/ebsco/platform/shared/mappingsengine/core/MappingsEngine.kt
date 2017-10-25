@@ -9,7 +9,7 @@ import com.jayway.jsonpath.spi.json.JacksonJsonProvider
 import com.jayway.jsonpath.spi.json.JsonProvider
 import kotlin.reflect.KClass
 
-private val REGISTERED_TRANSFORMERS: Map<String, KClass<out JsonTransformer>> = mapOf(
+val REGISTERED_TRANSFORMERS: Map<String, KClass<out JsonTransformer>> = mapOf(
         "rename" to RenameJsonTransform::class,
         "copy" to CopyJsonTransform::class,
         "delete" to DeleteJsonTransform::class,

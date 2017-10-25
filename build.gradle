@@ -8,7 +8,7 @@ buildscript {
     ext.ugly_json_version = '20170516'
     ext.jsonpath_version = '2.4.+'
     ext.jackson_version = '2.9.+'
-    ext.version_airline = '2.3.+'
+    ext.version_jcommander = '1.72'
     ext.version_lombok_gradleplugin = '1.10'
     ext.version_lombok = '1.16.18'
 
