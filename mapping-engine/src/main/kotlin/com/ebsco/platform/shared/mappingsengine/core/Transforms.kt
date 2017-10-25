@@ -1,42 +1,5 @@
 package com.ebsco.platform.shared.mappingsengine.core
 
-import com.jayway.jsonpath.Configuration
-import com.jayway.jsonpath.JsonPath
-
-
-class RenameJsonTransform(val fromPath: String, val targetPath: String) : JsonTransformer {
-    val compiledSourceJsonPath = JsonPath.compile(fromPath)
-
-    override fun apply(context: JsonTransformerContext) {
-        val fromToMapping: List<ResolvedPaths> = context.queryAndResolveTargetPaths(compiledSourceJsonPath, targetPath)
-        fromToMapping.forEach { mapping ->
-            val sourceValue = context.queryForValue(mapping.sourcePath)
-            context.applyUpdate(mapping, sourceValue)
-            context.deleteValue(mapping.sourcePath)
-        }
-    }
-}
-
-class DeleteJsonTransform(val deletePath: String) : JsonTransformer {
-    val compiledSourceJsonPath = JsonPath.compile(deletePath)
-    override fun apply(context: JsonTransformerContext) {
-        context.queryForPaths(compiledSourceJsonPath).forEach { context.deleteValue(it) }
-    }
-}
-
-
-class CopyJsonTransform(val fromPath: String, val targetPath: String) : JsonTransformer {
-    val compiledSourceJsonPath = JsonPath.compile(fromPath)
-
-    override fun apply(context: JsonTransformerContext) {
-        val fromToMapping: List<ResolvedPaths> = context.queryAndResolveTargetPaths(compiledSourceJsonPath, targetPath)
-        fromToMapping.forEach { mapping ->
-            val sourceValue = context.queryForValue(mapping.sourcePath)
-            context.applyUpdate(mapping, sourceValue)
-        }
-    }
-}
-
 class ConcatJsonTransform(val fromPaths: List<String>, val delimiter: String, val targetPath: String) : JsonTransformer {
     override fun apply(context: JsonTransformerContext) {
         val allMappings: List<Pair<String, List<ResolvedPaths>>> = fromPaths.map {

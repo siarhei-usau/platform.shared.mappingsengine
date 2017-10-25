@@ -1,6 +1,7 @@
 package com.ebsco.entarch.mappings.streamsets
 
 import com.ebsco.platform.shared.mappingsengine.config.MappingsEngineJsonConfig
+import com.ebsco.platform.shared.mappingsengine.core.DefaultTransformers
 import com.ebsco.platform.shared.mappingsengine.core.MappingsEngine
 import com.ebsco.platform.shared.mappingsengine.xml.XmlToRecordParser
 import com.ebsco.platform.shared.mappingsengine.xml.XmlToRecordParserConfig
@@ -61,7 +62,7 @@ class XmlToJsonCanonicalProcessor : SingleLaneRecordProcessor() {
         ))
     }
 
-    private val mappings by lazy { MappingsEngine(cfgJson.transforms, jsonProvider = parser.config.jsonProvider) }
+    private val mappings by lazy { MappingsEngine(cfgJson.transforms, DefaultTransformers.TRANFORMERS, parser.config.jsonProvider) }
 
     private val jsonMapper = jacksonObjectMapper()
 

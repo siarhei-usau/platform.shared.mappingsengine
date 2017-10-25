@@ -1,5 +1,8 @@
 package com.ebsco.platform.shared.mappingsengine.core
 
+import com.ebsco.platform.shared.mappingsengine.core.transformers.CopyJsonTransform
+import com.ebsco.platform.shared.mappingsengine.core.transformers.DeleteJsonTransform
+import com.ebsco.platform.shared.mappingsengine.core.transformers.RenameJsonTransform
 import org.junit.Ignore
 import org.junit.Test
 import kotlin.test.assertEquals
