@@ -1,18 +1,15 @@
 package com.ebsco.platform.shared.mappingsengine.cli;
 
 import com.beust.jcommander.JCommander;
-import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
 import com.ebsco.platform.shared.mappingsengine.config.MappingsEngineJsonConfig;
+import com.ebsco.platform.shared.mappingsengine.core.DefaultTransformers;
 import com.ebsco.platform.shared.mappingsengine.core.MappingsEngine;
-import com.ebsco.platform.shared.mappingsengine.core.MappingsEngineKt;
 import com.ebsco.platform.shared.mappingsengine.xml.XmlToRecordParser;
 import com.ebsco.platform.shared.mappingsengine.xml.XmlToRecordParserConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.spi.json.JacksonJsonProvider;
 import kotlin.text.Charsets;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.val;
 
@@ -37,17 +34,17 @@ public class App {
     }
 
     public static void main(String[] args) {
-        CliArgs parsedArgs = new CliArgs();
+        val parsedArgs = new CliArgs();
 
         try {
-            JCommander cmdline = JCommander.newBuilder()
+            val cmdline = JCommander.newBuilder()
                     .addObject(parsedArgs)
                     .build();
 
             cmdline.parse(args);
 
-            File inputXmlFile = new File(parsedArgs.getXmlInputFileName());
-            File configFile = new File(parsedArgs.getConfigFileName());
+            val inputXmlFile = new File(parsedArgs.getXmlInputFileName());
+            val configFile = new File(parsedArgs.getConfigFileName());
 
             if (!inputXmlFile.exists()) {
                 printUsageAndExit("XML input filename does not exist: " + inputXmlFile.getAbsolutePath(), cmdline);
@@ -69,8 +66,7 @@ public class App {
 
             try {
                 new App(configFile, inputXmlFile, outputJsonFile).run();
-            }
-            catch (IOException ex) {
+            } catch (IOException ex) {
                 System.err.println("Error: " + ex.getMessage());
                 ex.printStackTrace();
                 System.exit(-2);
@@ -82,13 +78,13 @@ public class App {
 
     }
 
-    private static void printUsageAndExit(String errMessage, JCommander cmdline) {
+    private static void printUsageAndExit(final String errMessage, final JCommander cmdline) {
         System.err.println(errMessage);
         cmdline.usage();
         System.exit(-1);
     }
 
-    private void println(String msg) {
+    private void println(final String msg) {
         System.out.println(msg);
     }
 
@@ -120,10 +116,10 @@ public class App {
         ));
 
         val mappings = new MappingsEngine(cfgFile.getTransforms(),
-                MappingsEngineKt.getREGISTERED_TRANSFORMERS(),
+                DefaultTransformers.TRANFORMERS,
                 parser.getConfig().getJsonProvider());
 
-        try (InputStream xmlInputStream = new FileInputStream(inputXmlFile)) {
+        try (final InputStream xmlInputStream = new FileInputStream(inputXmlFile)) {
             val rootWithDocument = parser.parse(xmlInputStream);
             val rootNodeName = rootWithDocument.getFirst();
             val innerObject = rootWithDocument.getSecond();

@@ -1,3 +1,6 @@
 package com.ebsco.platform.shared.mappingsengine.core;
 
-// TODO: port from Kotlin
+public interface JsonTransformer {
+    void apply(final JsonTransformerContext context);
+}
+

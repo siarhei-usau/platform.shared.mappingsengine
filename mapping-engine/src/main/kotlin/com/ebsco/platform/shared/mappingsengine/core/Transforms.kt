@@ -3,42 +3,6 @@ package com.ebsco.platform.shared.mappingsengine.core
 import com.jayway.jsonpath.Configuration
 import com.jayway.jsonpath.JsonPath
 
-interface JsonTransformer {
-    fun apply(context: JsonTransformerContext)
-}
-
-open class JsonTransformerContext(val jsonObject: Any, val jpathCfg: Configuration, val jvalueCfg: Configuration, val jvalueListCfg: Configuration) {
-    val jpathCtx = JsonPath.using(jpathCfg).parse(jsonObject)           // existing objects are wrapped, not parsed
-    val jvalueCtx = JsonPath.using(jvalueCfg).parse(jsonObject)         // existing objects are wrapped, not parsed
-    val jvalueListCtx = JsonPath.using(jvalueListCfg).parse(jsonObject) // existing objects are wrapped, not parsed
-
-
-    // we might be able to call CompiledPath.eval to get both values and paths at same time, but we lose path caching and have to do that ourselves
-
-    fun queryForPaths(jsonPath: String): List<String> = jpathCtx.read(jsonPath)
-    fun queryForPaths(jsonPath: JsonPath): List<String> = jpathCtx.read(jsonPath)
-
-    fun queryForValues(jsonPath: String): List<Any> = jvalueListCtx.read(jsonPath)
-    fun queryForValues(jsonPath: JsonPath): List<Any> = jvalueListCtx.read(jsonPath)
-
-    fun queryForValue(jsonPath: String): Any = jvalueCtx.read(jsonPath)
-    fun queryForValue(jsonPath: JsonPath): Any = jvalueCtx.read(jsonPath)
-
-    fun resolveTargetPaths(targetJsonPath: String, relativeToPaths: List<String>, allowNonMatching: Boolean = false): List<ResolvedPaths>
-            = jpathCtx.resolveTargetPaths(targetJsonPath, relativeToPaths, allowNonMatching)
-
-    fun queryAndResolveTargetPaths(jsonPath: String, targetJsonPath: String, allowNonMatching: Boolean = false): List<ResolvedPaths>
-            = resolveTargetPaths(targetJsonPath, queryForPaths(jsonPath), allowNonMatching)
-
-    fun queryAndResolveTargetPaths(jsonPath: JsonPath, targetJsonPath: String, allowNonMatching: Boolean = false): List<ResolvedPaths>
-            = resolveTargetPaths(targetJsonPath, queryForPaths(jsonPath), allowNonMatching)
-
-    fun applyUpdate(target: ResolvedPaths, jsonFragment: Any) = jpathCtx.applyUpdatePath(target.targetBasePath, target.targetUpdatePath, jsonFragment)
-    fun applyUpdate(targetBasePath: String, targetUpdatePath: String, jsonFragment: Any) = jpathCtx.applyUpdatePath(targetBasePath, targetUpdatePath, jsonFragment)
-
-    fun deleteValue(jsonPath: JsonPath) = jvalueCtx.delete(jsonPath)
-    fun deleteValue(jsonPath: String) = jvalueCtx.delete(jsonPath)
-}
 
 class RenameJsonTransform(val fromPath: String, val targetPath: String) : JsonTransformer {
     val compiledSourceJsonPath = JsonPath.compile(fromPath)

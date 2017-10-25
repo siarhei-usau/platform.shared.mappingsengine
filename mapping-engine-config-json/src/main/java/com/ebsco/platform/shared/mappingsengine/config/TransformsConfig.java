@@ -21,7 +21,7 @@ public class TransformsConfig {
     @NonNull
     private Map<String, Object> config = new HashMap<>();
 
-    public <T> T bind(Class<T> toClass) {
+    public <T> T bind(final Class<T> toClass) {
         return new ObjectMapper().convertValue(config, toClass);
     }
 }

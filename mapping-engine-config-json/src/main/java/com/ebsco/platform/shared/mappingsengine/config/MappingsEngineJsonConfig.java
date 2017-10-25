@@ -22,15 +22,15 @@ public class MappingsEngineJsonConfig {
 
     private SubsystemConfiguration configuration;
 
-    static public MappingsEngineJsonConfig fromJson(String json) throws IOException {
+    static public MappingsEngineJsonConfig fromJson(final String json) throws IOException {
         return new ObjectMapper().readValue(json, MappingsEngineJsonConfig.class);
     }
 
-    static public MappingsEngineJsonConfig fromJson(InputStream json) throws IOException {
+    static public MappingsEngineJsonConfig fromJson(final InputStream json) throws IOException {
         return new ObjectMapper().readValue(json, MappingsEngineJsonConfig.class);
     }
 
-    static public MappingsEngineJsonConfig fromJson(Reader json) throws IOException {
+    static public MappingsEngineJsonConfig fromJson(final Reader json) throws IOException {
         return new ObjectMapper().readValue(json, MappingsEngineJsonConfig.class);
     }
 }
