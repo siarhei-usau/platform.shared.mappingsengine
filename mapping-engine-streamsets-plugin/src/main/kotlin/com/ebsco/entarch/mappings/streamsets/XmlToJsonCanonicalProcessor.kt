@@ -49,11 +49,11 @@ class XmlToJsonCanonicalProcessor : SingleLaneRecordProcessor() {
     private val parser by lazy {
         XmlToRecordParser(XmlToRecordParserConfig(
                 preserveNestedTextElements_ByXPath = xml2jsonCfg.embedLiteralXmlAtPaths,
-                preserveNestedTextElements_AutoDetect = xml2jsonCfg.autoDetectMixedContent,
-                preserveNestedTextElements_UnhandledResultInError = xml2jsonCfg.unhandledMixedContentIsError,
+                preserveNestedTextElements_AutoDetect = xml2jsonCfg.isAutoDetectMixedContent,
+                preserveNestedTextElements_UnhandledResultInError = xml2jsonCfg.isUnhandledMixedContentIsError,
                 forceSingleValueNodes_ByXPath = xml2jsonCfg.forceSingleValueElementAtPaths,
                 forceElevateTextNode_ByXPath = xml2jsonCfg.forceElevateTextNodesAtPaths,
-                forceElevateTextNodesAreSingleValued = xml2jsonCfg.forceElevateTextNodesAsSingleValue,
+                forceElevateTextNodesAreSingleValued = xml2jsonCfg.isForceElevateTextNodesAsSingleValue,
                 textNodeName = xml2jsonCfg.textNodeName,
                 attributeNodePrefix = xml2jsonCfg.attributeNodePrefix,
                 attributePrefixesToKeep = xml2jsonCfg.preserveAttributePrefixes.toSet(),

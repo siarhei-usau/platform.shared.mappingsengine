@@ -9,12 +9,18 @@ buildscript {
     ext.jsonpath_version = '2.4.+'
     ext.jackson_version = '2.9.+'
     ext.version_airline = '2.3.+'
+    ext.version_lombok_gradleplugin = '1.10'
+    ext.version_lombok = '1.16.18'
 
     repositories {
         mavenCentral()
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
     }
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    //    classpath "io.franzbecker:gradle-lombok:$version_lombok"
     }
 }
 
@@ -23,8 +29,8 @@ version '1.0.7-SNAPSHOT'
 
 
 subprojects {
+//    apply plugin: 'io.franzbecker.gradle-lombok'
     apply plugin: 'kotlin'
-
 
     repositories {
         mavenCentral()
@@ -36,6 +42,9 @@ subprojects {
         testCompile "junit:junit:$junit_version"
         testCompile "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
 
+        compileOnly "org.projectlombok:lombok:$version_lombok"
+     //   annotationProcessor "org.projectlombok:lombok:$version_lombok"
+        kapt "org.projectlombok:lombok:$version_lombok"
         // it is already bound to slf4j-log4j testRuntime "ch.qos.logback:logback-classic:$logback_version"
 
     }
