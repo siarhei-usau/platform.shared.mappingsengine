@@ -1,6 +1,6 @@
 apply plugin: "application"
 
-mainClassName = "com.ebsco.platform.shared.mappingsengine.cli.MappingEngineCliApp"
+mainClassName = "com.ebsco.platform.shared.mappingsengine.cli.App"
 
 dependencies {
     compile project(":mapping-engine-config-json")
