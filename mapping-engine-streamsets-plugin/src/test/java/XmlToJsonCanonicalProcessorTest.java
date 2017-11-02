@@ -39,7 +39,6 @@ public class XmlToJsonCanonicalProcessorTest {
     }
 
     @Test
-    @Ignore
     public void processorCanRunFromString() throws Exception {
         runner = new ProcessorRunner.Builder(XmlToJsonCanonicalProcessor.class)
                 .addConfiguration("mappingInstructions", getText())
@@ -71,7 +70,6 @@ public class XmlToJsonCanonicalProcessorTest {
     }
 
     @Test
-    @Ignore
     public void processorCanRunFromFileRef() throws Exception {
         runner = new ProcessorRunner.Builder(XmlToJsonCanonicalProcessor.class)
                 .addConfiguration("mappingInstructions", getText())

@@ -2,6 +2,7 @@ package com.ebsco.platform.shared.mappingsengine.config;
 
 import lombok.NonNull;
 import lombok.Value;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 
@@ -10,10 +11,10 @@ public class TransformsConfig {
     @NonNull
     String type;
 
-    @NonNull
+    @Nullable
     String id;
 
-    @NonNull
+    @Nullable
     String notes;
 
     @NonNull
