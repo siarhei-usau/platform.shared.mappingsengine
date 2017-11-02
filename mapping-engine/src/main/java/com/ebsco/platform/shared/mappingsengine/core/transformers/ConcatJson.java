@@ -5,9 +5,7 @@ import com.ebsco.platform.shared.mappingsengine.core.JsonTransformerContext;
 import com.ebsco.platform.shared.mappingsengine.core.ResolvedPaths;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.NoArgsConstructor;
 import lombok.NonNull;
-import lombok.Setter;
 import lombok.Value;
 import org.jetbrains.annotations.NotNull;
 

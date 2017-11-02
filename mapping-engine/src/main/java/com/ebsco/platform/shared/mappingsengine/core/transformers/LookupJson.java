@@ -4,10 +4,7 @@ import com.ebsco.platform.shared.mappingsengine.core.JsonTransformer;
 import com.ebsco.platform.shared.mappingsengine.core.JsonTransformerContext;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.NoArgsConstructor;
 import lombok.NonNull;
-import lombok.Setter;
-import lombok.Value;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -31,11 +28,12 @@ public class LookupJson implements JsonTransformer {
     @NonNull
     private Map<String, Object> jsonTemplate;
 
-    @JsonCreator public LookupJson(@NotNull @JsonProperty("lookupResource") String lookupResource,
-                                   @NotNull @JsonProperty("filters") List<LookupFilter> filters,
-                                   @NotNull @JsonProperty("mode") LookupApplyModes mode,
-                                   @NotNull @JsonProperty("targetPath") String targetPath,
-                                   @NotNull @JsonProperty("jsonTemplate") Map<String, Object> jsonTemplate) {
+    @JsonCreator
+    public LookupJson(@NotNull @JsonProperty("lookupResource") String lookupResource,
+                      @NotNull @JsonProperty("filters") List<LookupFilter> filters,
+                      @NotNull @JsonProperty("mode") LookupApplyModes mode,
+                      @NotNull @JsonProperty("targetPath") String targetPath,
+                      @NotNull @JsonProperty("jsonTemplate") Map<String, Object> jsonTemplate) {
         this.lookupResource = lookupResource;
         this.filters = filters;
         this.mode = mode;
@@ -74,13 +72,14 @@ public class LookupJson implements JsonTransformer {
             this.lookupValues = lookupValues;
         }
 
-        @JsonCreator public LookupFilter(@NotNull @JsonProperty("lookupField") String lookupField,
-                                         @JsonProperty("fromPath") String fromPath,
-                                         @JsonProperty("lookupValues") List<String> lookupValues) {
+        @JsonCreator
+        public LookupFilter(@NotNull @JsonProperty("lookupField") String lookupField,
+                            @JsonProperty("fromPath") String fromPath,
+                            @JsonProperty("lookupValues") List<String> lookupValues) {
             this.lookupField = lookupField;
 
             if (fromPath != null && lookupValues != null && !lookupValues.isEmpty()) {
-               throw new IllegalArgumentException("Cannot have both a fromPath and lookupValues, it is either/or");
+                throw new IllegalArgumentException("Cannot have both a fromPath and lookupValues, it is either/or");
             }
 
             this.fromPath = fromPath;

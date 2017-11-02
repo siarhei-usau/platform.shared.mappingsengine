@@ -6,9 +6,7 @@ import com.ebsco.platform.shared.mappingsengine.core.ResolvedPaths;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.jayway.jsonpath.JsonPath;
-import lombok.NoArgsConstructor;
 import lombok.NonNull;
-import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -23,7 +21,9 @@ public class RenameJson implements JsonTransformer {
 
     private JsonPath compiledSourceJsonPath;
 
-    @JsonCreator public RenameJson(@NotNull @JsonProperty("fromPath") String fromPath, @NotNull @JsonProperty("targetPath") String targetPath) {
+    @JsonCreator
+    public RenameJson(@NotNull @JsonProperty("fromPath") String fromPath,
+                      @NotNull @JsonProperty("targetPath") String targetPath) {
         this.fromPath = fromPath;
         this.targetPath = targetPath;
         this.compiledSourceJsonPath = JsonPath.compile(this.fromPath);

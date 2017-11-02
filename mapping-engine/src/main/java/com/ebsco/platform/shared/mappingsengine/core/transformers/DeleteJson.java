@@ -5,9 +5,7 @@ import com.ebsco.platform.shared.mappingsengine.core.JsonTransformerContext;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.jayway.jsonpath.JsonPath;
-import lombok.NoArgsConstructor;
 import lombok.NonNull;
-import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
 
 public class DeleteJson implements JsonTransformer {
@@ -17,7 +15,8 @@ public class DeleteJson implements JsonTransformer {
 
     private JsonPath compiledSourceJsonPath;
 
-    @JsonCreator public DeleteJson(@NotNull @JsonProperty("deletePath") String deletePath) {
+    @JsonCreator
+    public DeleteJson(@NotNull @JsonProperty("deletePath") String deletePath) {
         this.deletePath = deletePath;
         this.compiledSourceJsonPath = JsonPath.compile(this.deletePath);
     }
