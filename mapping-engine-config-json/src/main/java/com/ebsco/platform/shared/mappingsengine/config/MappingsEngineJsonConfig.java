@@ -1,36 +1,37 @@
 package com.ebsco.platform.shared.mappingsengine.config;
 
+import com.ebsco.platform.shared.mappingsengine.config.EngineMetadata;
+import com.ebsco.platform.shared.mappingsengine.config.SubsystemConfiguration;
+import com.ebsco.platform.shared.mappingsengine.config.TransformsConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
+import lombok.SneakyThrows;
+import lombok.Value;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
-import java.util.ArrayList;
 import java.util.List;
 
-@Data
-@NoArgsConstructor
+@Value
 public class MappingsEngineJsonConfig {
-    @NonNull
-    private EngineMetadata metadata;
 
-    @NonNull
-    private List<TransformsConfig> transforms = new ArrayList<>();
+    private static final ObjectMapper jacksonObjectMapper = new ObjectMapper();
 
-    private SubsystemConfiguration configuration;
+    EngineMetadata metadata;
+    List<TransformsConfig> transforms;
+    SubsystemConfiguration configuration;
 
-    static public MappingsEngineJsonConfig fromJson(final String json) throws IOException {
-        return new ObjectMapper().readValue(json, MappingsEngineJsonConfig.class);
+    @SneakyThrows
+    public static MappingsEngineJsonConfig fromJson(String json) {
+        return jacksonObjectMapper.readValue(json, MappingsEngineJsonConfig.class);
     }
 
-    static public MappingsEngineJsonConfig fromJson(final InputStream json) throws IOException {
-        return new ObjectMapper().readValue(json, MappingsEngineJsonConfig.class);
+    @SneakyThrows
+    public static MappingsEngineJsonConfig fromJson(InputStream json) {
+        return jacksonObjectMapper.readValue(json, MappingsEngineJsonConfig.class);
     }
 
-    static public MappingsEngineJsonConfig fromJson(final Reader json) throws IOException {
-        return new ObjectMapper().readValue(json, MappingsEngineJsonConfig.class);
+    @SneakyThrows
+    public static MappingsEngineJsonConfig fromJson(Reader json) {
+        return jacksonObjectMapper.readValue(json, MappingsEngineJsonConfig.class);
     }
 }

@@ -4,10 +4,8 @@ dependencies {
     compile project(":mapping-engine-config-json")
 
     compile "com.jayway.jsonpath:json-path:$jsonpath_version"
-    compile "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
 
     compile "com.fasterxml.jackson.core:jackson-databind:$jackson_version"
-    compile "com.fasterxml.jackson.module:jackson-module-kotlin:$jackson_version"
 
     testCompile project(':mapping-engine-xml-reader')
 

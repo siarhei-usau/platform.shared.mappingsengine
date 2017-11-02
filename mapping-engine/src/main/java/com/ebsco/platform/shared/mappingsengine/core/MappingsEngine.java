@@ -1,90 +1,77 @@
 package com.ebsco.platform.shared.mappingsengine.core;
 
 import com.ebsco.platform.shared.mappingsengine.config.TransformsConfig;
+import com.ebsco.platform.shared.mappingsengine.core.transformers.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.Option;
 import com.jayway.jsonpath.spi.json.JacksonJsonProvider;
 import com.jayway.jsonpath.spi.json.JsonProvider;
+import lombok.Builder;
 import lombok.Getter;
-import lombok.NonNull;
-import lombok.Setter;
-import lombok.val;
-import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
-import static com.fasterxml.jackson.module.kotlin.ExtensionsKt.jacksonObjectMapper;
+import static java.util.stream.Collectors.toList;
 
-/**
- * MappingsEngine applies transformations mutating an existing JSON object
- *
- * All tranformations are plugged in, and are specified in-order within the configuration object
- *
- */
+@Builder
 public class MappingsEngine {
-    @NonNull
+
+    private static final Map<String, Class<? extends JsonTransformer>> REGISTERED_TRANSFORMERS = registerTransformers();
     @Getter
-    private final List<TransformsConfig> transforms;
-
-    @NonNull
+    private List<TransformsConfig> transforms;
     @Getter
-    private final Map<String, Class<? extends JsonTransformer>> transformerClasses;
-
-    @NonNull
+    @Builder.Default
+    private JsonProvider jsonProvider = new JacksonJsonProvider();
     @Getter
-    private JsonProvider jsonProvider;
+    @Builder.Default
+    private Map<String, Class<? extends JsonTransformer>> transformerClasses = REGISTERED_TRANSFORMERS;
 
-    // TODO: when no Kotlin is around, this can be just normal `new ObjectMapper()` but doesn't hurt anything either
-    private final ObjectMapper mapper = jacksonObjectMapper();
+    private final Configuration jsonValueList = Configuration.builder()
+            .options(Option.ALWAYS_RETURN_LIST, Option.SUPPRESS_EXCEPTIONS)
+            .jsonProvider(jsonProvider)
+            .build();
 
-    private final List<JsonTransformer> transformSteps;
+    private final Configuration jsonPaths = Configuration.builder()
+            .options(Option.AS_PATH_LIST, Option.SUPPRESS_EXCEPTIONS)
+            .jsonProvider(jsonProvider)
+            .build();
 
-    private final Configuration jsonPaths;
+    private final Configuration jsonValue = Configuration.builder()
+            .options(Option.ALWAYS_RETURN_LIST, Option.SUPPRESS_EXCEPTIONS)
+            .jsonProvider(jsonProvider)
+            .build();
 
-    private final Configuration jsonValueList;
+    private final ObjectMapper mapper = new ObjectMapper();
 
-    private final Configuration jsonValue;
+    @Getter(lazy = true)
+    private final List<JsonTransformer> transformSteps = createTransformSteps();
 
-    public MappingsEngine(final List<TransformsConfig> transforms,
-                          final Map<String, Class<? extends JsonTransformer>> transformerClasses,
-                          final JsonProvider jsonProvider) {
-        this.transforms = new ArrayList<>(transforms);
-        this.transformerClasses = transformerClasses;
-        this.jsonProvider = jsonProvider;
-
-        this.transformSteps = transforms.stream().map((cfg) -> {
-            val transformClass = transformerClasses.get(cfg.getType());
+    private List<JsonTransformer> createTransformSteps() {
+        return transforms.stream().map(cfg -> {
+            Class<? extends JsonTransformer> transformClass = transformerClasses.get(cfg.getType());
             if (transformClass == null) {
-                throw new IllegalStateException("Transformer type ${cfg.type} is not registered!");
+                throw new IllegalStateException("Transformer type " + cfg.getType() + " is not registered!");
             }
             return mapper.convertValue(cfg.getConfig(), transformClass);
-        }).collect(Collectors.toList());
-
-        this.jsonPaths = Configuration.builder()
-                .options(Option.AS_PATH_LIST, Option.SUPPRESS_EXCEPTIONS)
-                .jsonProvider(jsonProvider)
-                .build();
-        this.jsonValueList = Configuration.builder()
-                .options(Option.ALWAYS_RETURN_LIST, Option.SUPPRESS_EXCEPTIONS)
-                .jsonProvider(jsonProvider)
-                .build();
-
-        this.jsonValue = Configuration.builder()
-                .options(Option.ALWAYS_RETURN_LIST, Option.SUPPRESS_EXCEPTIONS)
-                .jsonProvider(jsonProvider)
-                .build();
+        }).collect(toList());
     }
 
-
-    public void processDocument(@NotNull final Object jsonDocument) {
-        final JsonTransformerContext context = new JsonTransformerContext(jsonDocument, jsonPaths, jsonValue, jsonValueList);
-        for (JsonTransformer tx : transformSteps) {
-            tx.apply(context);
-        }
+    public void processDocument(Object jsonDocument) {
+        JsonTransformerContext context = new JsonTransformerContext(jsonDocument, jsonPaths, jsonValue, jsonValueList);
+        getTransformSteps().forEach(step -> step.apply(context));
     }
+
+    private static Map<String, Class<? extends JsonTransformer>> registerTransformers() {
+        Map<String, Class<? extends JsonTransformer>> result = new HashMap<>();
+        result.put("rename", RenameJson.class);
+        result.put("copy", CopyJson.class);
+        result.put("delete", DeleteJson.class);
+        result.put("concat", ConcatJson.class);
+        result.put("lookup", LookupJson.class);
+        return result;
+    }
+
 }

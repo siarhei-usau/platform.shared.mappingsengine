@@ -1,12 +1,13 @@
 apply plugin: "application"
 
-mainClassName = "com.ebsco.platform.shared.mappingsengine.cli.App"
+mainClassName = "com.ebsco.platform.shared.mappingsengine.cli.MappingEngineCliApp"
 
 dependencies {
     compile project(":mapping-engine-config-json")
     compile project(':mapping-engine')
     compile project(':mapping-engine-xml-reader')
 
-    compile group: 'com.beust', name: 'jcommander', version: version_jcommander
-    // compile group: 'com.github.rvesse', name: 'airline', version: version_airline
+    // https://mvnrepository.com/artifact/com.github.rvesse/airline
+    compile group: 'com.github.rvesse', name: 'airline', version: '2.3.0'
+
 }

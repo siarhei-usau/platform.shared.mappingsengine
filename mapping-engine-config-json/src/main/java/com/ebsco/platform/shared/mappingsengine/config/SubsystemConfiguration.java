@@ -1,13 +1,8 @@
 package com.ebsco.platform.shared.mappingsengine.config;
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
+import lombok.Value;
 
-@Data
-@NoArgsConstructor
+@Value
 public class SubsystemConfiguration {
-    @NonNull
-    private Xml2JsonConfig xml2json;
+    Xml2JsonConfig xml2json;
 }
-

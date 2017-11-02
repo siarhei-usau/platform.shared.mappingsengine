@@ -1,18 +1,10 @@
 package com.ebsco.platform.shared.mappingsengine.config;
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
+import lombok.Value;
 
-@Data
-@NoArgsConstructor
+@Value
 public class EngineMetadata {
-    @NonNull
-    private String id;
-
-    @NonNull
-    private String version;
-
-    @NonNull
-    private String primaryKey;
+    String id;
+    String version;
+    String primaryKey;
 }

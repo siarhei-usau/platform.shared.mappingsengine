@@ -1,38 +1,25 @@
 package com.ebsco.platform.shared.mappingsengine.config;
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
+import lombok.Getter;
+import lombok.ToString;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Stream;
 
-@Data
-@NoArgsConstructor
+import static java.util.Collections.emptyList;
+import static java.util.stream.Collectors.toSet;
+
+@Getter
+@ToString
 public class Xml2JsonConfig {
-    @NonNull
-    private List<String> embedLiteralXmlAtPaths = new ArrayList<>();
-
-    private boolean autoDetectMixedContent = false;
-
-    private boolean unhandledMixedContentIsError = true;
-
-    @NonNull
-    private List<String> forceSingleValueElementAtPaths = new ArrayList<>();
-
-    @NonNull
-    private List<String> forceElevateTextNodesAtPaths = new ArrayList<>();
-
-    private boolean forceElevateTextNodesAsSingleValue = false;
-
-    @NonNull
-    private String textNodeName = "value";
-
-    @NonNull
-    private String attributeNodePrefix = "";
-
-    @NonNull
-    private List<String> preserveAttributePrefixes = Arrays.asList("xmlns", "xml");
+    List<String> embedLiteralXmlAtPaths = emptyList();
+    boolean autoDetectMixedContent = false;
+    boolean unhandledMixedContentIsError = true;
+    List<String> forceSingleValueElementAtPaths = emptyList();
+    List<String> forceElevateTextNodesAtPaths = emptyList();
+    boolean forceElevateTextNodesAsSingleValue = false;
+    String textNodeName = "value";
+    String attributeNodePrefix = "";
+    Set<String> preserveAttributePrefixes = Stream.of("xmlns", "xml").collect(toSet());
 }
-
