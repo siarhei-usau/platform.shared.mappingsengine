@@ -41,7 +41,7 @@ public class ConcatJson implements JsonTransformer {
     }
 
     @Override
-    public void apply(JsonTransformerContext context) {
+    public void apply(@NotNull JsonTransformerContext context) {
         // it gets complicated to handle cases where the source values are not in the same objects.  So we assume they are.
         //
         // Therefore we expect for every sourceJsonPath a list of matching paths of which some have target paths (if a value was present)
