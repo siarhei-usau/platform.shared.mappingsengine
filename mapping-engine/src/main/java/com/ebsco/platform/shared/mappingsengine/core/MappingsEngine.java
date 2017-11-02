@@ -9,6 +9,7 @@ import com.jayway.jsonpath.spi.json.JacksonJsonProvider;
 import com.jayway.jsonpath.spi.json.JsonProvider;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NonNull;
 
 import java.util.HashMap;
 import java.util.List;
@@ -20,6 +21,7 @@ import static java.util.stream.Collectors.toList;
 public class MappingsEngine {
 
     private static final Map<String, Class<? extends JsonTransformer>> REGISTERED_TRANSFORMERS = registerTransformers();
+    @NonNull
     @Getter
     private List<TransformsConfig> transforms;
     @Getter

@@ -88,9 +88,6 @@ public abstract class BasePathTest {
             .build();
 
     protected void printJson(Object tree, String title) throws JsonProcessingException {
-        System.out.println();
-        System.out.println(title);
         String s = new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(tree);
-        System.out.println(s);
     }
 }

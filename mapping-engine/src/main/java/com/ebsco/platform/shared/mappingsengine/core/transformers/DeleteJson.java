@@ -11,14 +11,16 @@ import lombok.Setter;
 public class DeleteJson implements JsonTransformer {
 
     private String deletePath;
+    private JsonPath compiledSourceJsonPath;
 
     public DeleteJson(String deletePath) {
         this.deletePath = deletePath;
+        this.compiledSourceJsonPath = JsonPath.compile(this.deletePath);
     }
 
     @Override
     public void apply(JsonTransformerContext context) {
-        context.queryForPaths(JsonPath.compile(deletePath))
+        context.queryForPaths(compiledSourceJsonPath)
                 .forEach(context::deleteValue);
     }
 }

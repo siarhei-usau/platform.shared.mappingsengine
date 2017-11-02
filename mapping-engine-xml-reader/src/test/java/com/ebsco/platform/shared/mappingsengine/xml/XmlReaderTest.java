@@ -43,7 +43,6 @@ public class XmlReaderTest {
 
 
     private void printTree(JsonNode tree) throws Exception {
-        System.out.println();
         System.out.println("Pretty JSON");
         String prettyJson = OBJECT_MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(tree);
         System.out.println(prettyJson);

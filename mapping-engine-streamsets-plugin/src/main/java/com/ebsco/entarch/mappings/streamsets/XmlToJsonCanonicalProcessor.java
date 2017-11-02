@@ -117,7 +117,6 @@ public class XmlToJsonCanonicalProcessor extends SingleLaneRecordProcessor {
                 jsonObject.put(parsed.getName(), (Map<String, Object>) parsed.getJsonNode());
 
                 getMappings().processDocument(jsonObject);
-                System.out.println();
 
                 String prettyJson = jsonMapper.writerWithDefaultPrettyPrinter().writeValueAsString(jsonObject);
                 Field field = Field.create(prettyJson);
