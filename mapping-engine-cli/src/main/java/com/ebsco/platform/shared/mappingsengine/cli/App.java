@@ -10,11 +10,11 @@ import com.ebsco.platform.shared.mappingsengine.xml.XmlToRecordParserConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.spi.json.JacksonJsonProvider;
 import com.jayway.jsonpath.spi.json.JsonProvider;
-import kotlin.text.Charsets;
 import lombok.NonNull;
 import lombok.val;
 
 import java.io.*;
+import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -119,7 +119,7 @@ public class App {
             val prettyJson = new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(jsonObject);
             if (outputJsonFile != null) {
                 try (OutputStream jsonOutputStream = new FileOutputStream(outputJsonFile)) {
-                    jsonOutputStream.write(prettyJson.getBytes(Charsets.UTF_8));
+                    jsonOutputStream.write(prettyJson.getBytes(Charset.forName("UTF-8")));
                 }
             }
         }

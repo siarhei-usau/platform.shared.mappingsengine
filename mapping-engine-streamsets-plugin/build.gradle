@@ -17,6 +17,9 @@ dependencies {
     testCompile "com.streamsets:streamsets-datacollector-sdk:$streamsets_sdk_version"
     testCompile "com.streamsets:streamsets-datacollector-spark-api:$streamsets_sdk_version"
 
+    apt "com.streamsets:streamsets-datacollector-api:$streamsets_api_version"
+    apt "com.streamsets:streamsets-datacollector-sdk:$streamsets_sdk_version"
+
     // it is already bound to slf4j-log4j testRuntime "ch.qos.logback:logback-classic:$logback_version"
 
 }
