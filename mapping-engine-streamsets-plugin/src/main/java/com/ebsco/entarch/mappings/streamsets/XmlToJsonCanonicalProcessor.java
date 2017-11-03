@@ -47,21 +47,22 @@ public class XmlToJsonCanonicalProcessor extends SingleLaneRecordProcessor {
             "}";
 
     @ConfigDef(required = true, type = ConfigDef.Type.TEXT, defaultValue = EMPTY_CONFIG,
-            label = "Mappings JSON", displayPosition = 10, group = "Mappings",
+            label = "Mappings JSON", displayPosition = 10, group = "MAPPINGS",
             description = "Mappings instruction set as JSON, either Simple or SLS formats")
     public String mappingInstructions = null;
 
     @ConfigDef(required = true, type = ConfigDef.Type.MODEL,
             defaultValue = "/fileRef",
-            label = "Raw XML Field", displayPosition = 5, group = "Mappings",
+            label = "Raw XML Field", displayPosition = 5, group = "MAPPINGS",
             description = "Raw XML Field, can be fileRef or string field containing XML")
     @FieldSelectorModel(singleValued = true)
     public String rawXmlField = null;
 
     @ConfigDef(required = true, type = ConfigDef.Type.MODEL,
             defaultValue = "/json",
-            label = "JSON output Field", displayPosition = 8, group = "Mappings",
+            label = "JSON output Field", displayPosition = 8, group = "MAPPINGS",
             description = "Output field to place the text version of the resulting JSON")
+    @FieldSelectorModel(singleValued = true)
     public String outJsonField = null;
 
     @Getter(lazy = true)
