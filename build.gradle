@@ -1,3 +1,4 @@
+apply plugin: 'io.spring.dependency-management'
 buildscript {
     ext.streamsets_api_version = '2.7.+'
     ext.streamsets_sdk_version = '2.7.+'
@@ -11,8 +12,11 @@ buildscript {
     ext.version_lombok = '1.16.18'
     ext.version_jetbrainsannotations = '13.0'
     ext.version_aws_sdk = '1.11.226'
+    ext.dependency_management_version = '0.6.0.RELEASE'
 
     repositories {
+        jcenter()
+        mavenLocal()
         mavenCentral()
         maven {
             url "https://plugins.gradle.org/m2/"
@@ -20,20 +24,35 @@ buildscript {
     }
     dependencies {
         classpath "net.ltgt.gradle:gradle-apt-plugin:0.13"
+        classpath "org.jfrog.buildinfo:build-info-extractor-gradle:latest.release"
     //    classpath "io.franzbecker:gradle-lombok:$version_lombok"
+        // The dependency management plugin changes Gradle's handling of a pom's exclusions so that they behave as they do in Maven.
+        // https://spring.io/blog/2015/02/23/better-dependency-management-for-gradle
+        classpath "io.spring.gradle:dependency-management-plugin:$dependency_management_version"
     }
 }
 
-group 'com.ebsco.entarch'
-version '1.0.9-SNAPSHOT'
+allprojects {
+    group 'com.ebsco.entarch'
+    version '1.0.9-SNAPSHOT'
+}
 
 
 subprojects {
     apply plugin: 'java'
     apply plugin: 'net.ltgt.apt'
+    apply plugin: 'distribution'
+    apply plugin: 'com.jfrog.artifactory'
+    apply plugin: 'maven-publish'
+
 
     repositories {
+        jcenter()
+        mavenLocal()
         mavenCentral()
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
     }
 
     dependencies {
@@ -44,9 +63,47 @@ subprojects {
         compileOnly "org.projectlombok:lombok:$version_lombok"
         apt "org.projectlombok:lombok:$version_lombok"
         testApt "org.projectlombok:lombok:$version_lombok"
+
     }
 
-    tasks.withType(Tar){
+    configurations.all {
+        exclude group: 'org.slf4j', module: 'slf4j-log4j12'
+        exclude group: 'log4j'
+    }
+
+    tasks.withType(Tar) {
         compression = Compression.GZIP
+    }
+
+    distributions {
+        main {
+            contents {
+                into('lib') {
+                    from jar
+                    from(project.configurations.runtime)
+                }
+            }
+        }
+    }
+
+    publishing {
+        publications {
+            mavenJava(MavenPublication) {
+                artifact distTar
+                artifact jar
+            }
+        }
+    }
+
+    artifactory {
+        contextUrl = 'https://eis.jfrog.io/eis'
+        publish {
+            repository {
+                repoKey = 'libs-snapshot-local'
+                username = System.getenv('ArtifactoryUser')
+                password = System.getenv('ArtifactoryPassword')
+            }
+            defaults { publications('mavenJava') }
+        }
     }
 }
