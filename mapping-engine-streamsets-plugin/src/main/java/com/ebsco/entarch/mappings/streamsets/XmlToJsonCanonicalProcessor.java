@@ -12,12 +12,11 @@ import com.streamsets.pipeline.api.base.OnRecordErrorException;
 import com.streamsets.pipeline.api.base.SingleLaneRecordProcessor;
 import lombok.Getter;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @StageDef(version = 1, label = "XML2JSON Canonical Processor", icon = "default.png", onlineHelpRefUrl = "")
 @ConfigGroups(Groups.class)
@@ -38,12 +37,29 @@ public class XmlToJsonCanonicalProcessor extends SingleLaneRecordProcessor {
             "  }\n" +
             "}";
 
+    @ConfigDef(required = true, type = ConfigDef.Type.MODEL,
+            defaultValue = "Inline",
+            label = "Mappings Source", displayPosition = 9, group = "MAPPINGS",
+            description = "Mappings instruction set source")
+    @ValueChooserModel(InstructionsSourcesChooser.class)
+    public InstructionsSources mappingInstructionsSource = InstructionsSources.Inline;
+
     @ConfigDef(required = true, type = ConfigDef.Type.TEXT, defaultValue = EMPTY_CONFIG,
             label = "Mappings JSON", displayPosition = 10, group = "MAPPINGS",
             mode = ConfigDef.Mode.JSON,
             lines = 15,
+            dependsOn = "mappingInstructionsSource",
+            triggeredByValue = { "Inline" },
             description = "Mappings instruction set as JSON")
     public String mappingInstructions = null;
+
+    @ConfigDef(required = true, type = ConfigDef.Type.STRING, defaultValue = "mappingfile.json",
+            label = "Mappings JSON ", displayPosition = 10, group = "MAPPINGS",
+            lines = 0,
+            dependsOn = "mappingInstructionsSource",
+            triggeredByValue = { "File", "Classpath" },
+            description = "Mappings instruction set file location")
+    public String mappingInstructionsFilename = null;
 
     @ConfigDef(required = true, type = ConfigDef.Type.MODEL,
             defaultValue = "/fileRef",
@@ -87,14 +103,44 @@ public class XmlToJsonCanonicalProcessor extends SingleLaneRecordProcessor {
     @Override
     public List<ConfigIssue> init(Info info, Processor.Context context) {
         List<ConfigIssue> issues = super.init(info, context);
-        if (mappingInstructions.equals("invalidValue")) {
+        if (mappingInstructionsSource == InstructionsSources.File) {
+           try (BufferedReader reader = new BufferedReader(new FileReader(new File(mappingInstructionsFilename)))) {
+               mappingInstructions = reader.lines().collect(Collectors.joining("\n"));
+           } catch (FileNotFoundException ex) {
+               issues.add(context.createConfigIssue(Groups.MAPPINGS.getLabel(), "mappingInstructions",
+                       Errors.EBSCO_INVALID_CONFIG,
+                       "mappings instructions JSON file not found: " + mappingInstructionsFilename));
+           } catch (IOException ex) {
+               issues.add(context.createConfigIssue(Groups.MAPPINGS.getLabel(), "mappingInstructions",
+                       Errors.EBSCO_INVALID_CONFIG,
+                       "error reading mappings instructions JSON file: " + ex.getMessage()));
+           }
+        } else if (mappingInstructionsSource == InstructionsSources.Classpath) {
+            InputStream resource = getClass().getResourceAsStream(mappingInstructionsFilename);
+            if (resource == null) {
+                issues.add(context.createConfigIssue(Groups.MAPPINGS.getLabel(), "mappingInstructions",
+                        Errors.EBSCO_INVALID_CONFIG,
+                        "mappings instructions JSON file not found in classpath: " + mappingInstructionsFilename));
+            } else {
+                try (BufferedReader reader = new BufferedReader(new InputStreamReader(
+                        resource))) {
+                    mappingInstructions = reader.lines().collect(Collectors.joining("\n"));
+                } catch (IOException ex) {
+                    issues.add(context.createConfigIssue(Groups.MAPPINGS.getLabel(), "mappingInstructions",
+                            Errors.EBSCO_INVALID_CONFIG,
+                            "error reading mappings instructions JSON file: " + ex.getMessage()));
+                }
+            }
+        }
+
+        try {
+            MappingsEngineJsonConfig.fromJson(mappingInstructions);
+        } catch (Exception ex) {
             issues.add(context.createConfigIssue(Groups.MAPPINGS.getLabel(), "mappingInstructions",
-                    Errors.EBSCO_INVALID_CONFIG, "mappings mappingInstructions JSON is invalid")); // TODO: add errors from mapping system
+                    Errors.EBSCO_INVALID_CONFIG,
+                    "mappings instructions JSON is invalid: " + ex.getMessage()));
         }
-        if (rawXmlField.equals("invalidValue")) {
-            issues.add(context.createConfigIssue(Groups.MAPPINGS.getLabel(), "rawXmlField",
-                    Errors.EBSCO_INVALID_CONFIG, "field name for XML input is invalid")); // TODO: add errors from mapping system
-        }
+
         return issues;
     }
 
