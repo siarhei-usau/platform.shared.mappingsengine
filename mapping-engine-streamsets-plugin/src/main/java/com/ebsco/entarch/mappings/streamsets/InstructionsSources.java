@@ -1,5 +1,5 @@
 package com.ebsco.entarch.mappings.streamsets;
 
 public enum InstructionsSources {
-    Inline, File, Classpath
+    Inline, File, Classpath, S3
 }
