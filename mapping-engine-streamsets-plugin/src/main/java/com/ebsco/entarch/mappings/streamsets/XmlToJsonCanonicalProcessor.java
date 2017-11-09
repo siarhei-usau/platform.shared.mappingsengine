@@ -7,15 +7,7 @@ import com.ebsco.platform.shared.mappingsengine.xml.XmlToRecordParser;
 import com.ebsco.platform.shared.mappingsengine.xml.XmlToRecordParserConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.spi.json.JacksonJsonProvider;
-import com.streamsets.pipeline.api.ConfigDef;
-import com.streamsets.pipeline.api.ConfigGroups;
-import com.streamsets.pipeline.api.Field;
-import com.streamsets.pipeline.api.FieldSelectorModel;
-import com.streamsets.pipeline.api.GenerateResourceBundle;
-import com.streamsets.pipeline.api.Processor;
-import com.streamsets.pipeline.api.Record;
-import com.streamsets.pipeline.api.StageDef;
-import com.streamsets.pipeline.api.StageException;
+import com.streamsets.pipeline.api.*;
 import com.streamsets.pipeline.api.base.OnRecordErrorException;
 import com.streamsets.pipeline.api.base.SingleLaneRecordProcessor;
 import lombok.Getter;
@@ -48,15 +40,24 @@ public class XmlToJsonCanonicalProcessor extends SingleLaneRecordProcessor {
 
     @ConfigDef(required = true, type = ConfigDef.Type.TEXT, defaultValue = EMPTY_CONFIG,
             label = "Mappings JSON", displayPosition = 10, group = "MAPPINGS",
-            description = "Mappings instruction set as JSON, either Simple or SLS formats")
+            mode = ConfigDef.Mode.JSON,
+            lines = 15,
+            description = "Mappings instruction set as JSON")
     public String mappingInstructions = null;
 
     @ConfigDef(required = true, type = ConfigDef.Type.MODEL,
             defaultValue = "/fileRef",
-            label = "Raw XML Field", displayPosition = 5, group = "MAPPINGS",
-            description = "Raw XML Field, can be fileRef or string field containing XML")
+            label = "Input Field", displayPosition = 6, group = "MAPPINGS",
+            description = "Input Field, can be fileRef or string field containing content")
     @FieldSelectorModel(singleValued = true)
-    public String rawXmlField = null;
+    public String rawXmlField = null; // TODO: slightly misnamed but breaks existing flows to rename
+
+    @ConfigDef(required = true, type = ConfigDef.Type.MODEL,
+               defaultValue = "XML",
+               label = "Input Type", displayPosition = 5, group = "MAPPINGS",
+               description = "Input format (XML, JSON, ...)")
+    @ValueChooserModel(InputTypesChooser.class)
+    public InputTypes rawInputType = InputTypes.XML;
 
     @ConfigDef(required = true, type = ConfigDef.Type.MODEL,
             defaultValue = "/json",
@@ -104,19 +105,25 @@ public class XmlToJsonCanonicalProcessor extends SingleLaneRecordProcessor {
 
     @Override
     protected void process(Record record, SingleLaneBatchMaker batchMaker) throws StageException {
-        fixXmlToBetterJson(record);
+        applyMappings(record, rawXmlField);
         batchMaker.addRecord(record);
     }
 
-    private void fixXmlToBetterJson(Record record, String inputFieldName) throws OnRecordErrorException {
+    private void applyMappings(Record record, String inputFieldName) throws OnRecordErrorException {
         try {
             String inputFieldNameFixed = fixInputFieldName(inputFieldName);
             Field inputField = record.get(inputFieldNameFixed);
             try(InputStream is = getInputStream(inputField)) {
-                XmlToRecordParser.Result parsed = getParser().parse(is);
-                Map<String, Map<String, Object>> jsonObject = new HashMap<>();
-                jsonObject.put(parsed.getName(), (Map<String, Object>) parsed.getJsonNode());
-
+                final Map<String, Map<String, Object>> jsonObject;
+                if (rawInputType == InputTypes.XML) {
+                    XmlToRecordParser.Result parsed = getParser().parse(is);
+                    jsonObject = new HashMap<>();
+                    jsonObject.put(parsed.getName(), (Map<String, Object>) parsed.getJsonNode());
+                } else if (rawInputType == InputTypes.JSON) {
+                    jsonObject = jsonMapper.readValue(is, Map.class);
+                } else {
+                    throw new IllegalArgumentException("Input Type " + rawInputType.name() + " is not supported.");
+                }
                 getMappings().processDocument(jsonObject);
 
                 String prettyJson = jsonMapper.writerWithDefaultPrettyPrinter().writeValueAsString(jsonObject);
@@ -140,10 +147,6 @@ public class XmlToJsonCanonicalProcessor extends SingleLaneRecordProcessor {
             inputStream = inputField.getValueAsFileRef().createInputStream(getContext(), InputStream.class);
         }
         return inputStream;
-    }
-
-    private void fixXmlToBetterJson(Record record) throws OnRecordErrorException {
-        fixXmlToBetterJson(record, rawXmlField);
     }
 
     private String fixInputFieldName(String inputFieldName) {
