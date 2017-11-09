@@ -1,5 +1,7 @@
+package com.ebsco.platform.shared.mappingsengine.streamsets;
 
-
+import com.ebsco.entarch.mappings.streamsets.InputTypes;
+import com.ebsco.entarch.mappings.streamsets.InstructionsSources;
 import com.ebsco.entarch.mappings.streamsets.XmlToJsonCanonicalProcessor;
 import com.streamsets.pipeline.api.Field;
 import com.streamsets.pipeline.api.FileRef;
@@ -29,7 +31,8 @@ import static org.junit.Assert.assertEquals;
 public class XmlToJsonCanonicalProcessorTest {
 
     private ProcessorRunner runner;
-    private static final String XML_INPUT_FIELD_NAME = "/rawXml";
+    private static final String XML_INPUT_FIELD_NAME = "/rawXML";
+    private static final String JSON_INPUT_FIELD_NAME = "/rawJSON";
     private static final String FILE_REF_FIELD_NAME = "/fileRef";
     private static final String OUT_JSON_FIELD_NAME = "/json";
 
@@ -41,8 +44,10 @@ public class XmlToJsonCanonicalProcessorTest {
     @Test
     public void processorCanRunFromString() throws Exception {
         runner = new ProcessorRunner.Builder(XmlToJsonCanonicalProcessor.class)
+                .addConfiguration("mappingInstructionsSource", InstructionsSources.Inline)
                 .addConfiguration("mappingInstructions", getText())
                 .addConfiguration("rawXmlField", XML_INPUT_FIELD_NAME)
+                .addConfiguration("rawInputType", InputTypes.XML)
                 .addConfiguration("outJsonField", OUT_JSON_FIELD_NAME)
                 .addOutputLane("output")
                 .build();
@@ -72,8 +77,10 @@ public class XmlToJsonCanonicalProcessorTest {
     @Test
     public void processorCanRunFromFileRef() throws Exception {
         runner = new ProcessorRunner.Builder(XmlToJsonCanonicalProcessor.class)
+                .addConfiguration("mappingInstructionsSource", InstructionsSources.Inline)
                 .addConfiguration("mappingInstructions", getText())
                 .addConfiguration("rawXmlField", FILE_REF_FIELD_NAME)
+                .addConfiguration("rawInputType", InputTypes.XML)
                 .addConfiguration("outJsonField", OUT_JSON_FIELD_NAME)
                 .addOutputLane("output")
                 .build();
@@ -81,8 +88,6 @@ public class XmlToJsonCanonicalProcessorTest {
 
         Record record = RecordCreator.create();
         record.set(Field.create(new HashMap<>()));
-
-        write(record, XML_INPUT_FIELD_NAME, REALISTIC_XML);
 
         FileRef fakeFileRef = new FileRef(8192) {
             @Override
@@ -112,6 +117,62 @@ public class XmlToJsonCanonicalProcessorTest {
 
         System.out.println("OUTPUT FINAL RECORD:\n\n" + resultJson);
     }
+
+    @Test
+    public void processJsonInputType() throws Exception {
+        runner = new ProcessorRunner.Builder(XmlToJsonCanonicalProcessor.class)
+                .addConfiguration("mappingInstructionsSource", InstructionsSources.Inline)
+                .addConfiguration("mappingInstructions", getText())
+                .addConfiguration("rawXmlField", JSON_INPUT_FIELD_NAME)
+                .addConfiguration("rawInputType", InputTypes.JSON)
+                .addConfiguration("outJsonField", OUT_JSON_FIELD_NAME)
+                .addOutputLane("output")
+                .build();
+        runner.runInit();
+
+        Record record = RecordCreator.create();
+        record.set(Field.create(new HashMap<>()));
+
+        write(record, JSON_INPUT_FIELD_NAME, BASIC_JSON_BOOK);
+
+        StageRunner.Output output = runner.runProcess(singletonList(record));
+
+        assertEquals(1, output.getRecords().get("output").size());
+
+        Record result = output.getRecords().get("output").get(0);
+        result.getEscapedFieldPaths().forEach(it -> System.out.println("FILED: " + it));
+        String resultJson = result.get(OUT_JSON_FIELD_NAME).getValueAsString();
+
+        System.out.println("OUTPUT FINAL RECORD:\n\n" + resultJson);
+    }
+
+    @Test
+    public void canLoadMappingsFromFile() throws Exception {
+        runner = new ProcessorRunner.Builder(XmlToJsonCanonicalProcessor.class)
+                .addConfiguration("mappingInstructionsSource", InstructionsSources.File)
+                .addConfiguration("mappingInstructionsFilename", "./src/test/resources/mappings-example.json")
+                .addConfiguration("rawXmlField", XML_INPUT_FIELD_NAME)
+                .addConfiguration("rawInputType", InputTypes.XML)
+                .addConfiguration("outJsonField", OUT_JSON_FIELD_NAME)
+                .addOutputLane("output")
+                .build();
+        runner.runInit();
+    }
+
+    @Test
+    public void canLoadMappingsFromClasspath() throws Exception {
+        runner = new ProcessorRunner.Builder(XmlToJsonCanonicalProcessor.class)
+                .addConfiguration("mappingInstructionsSource", InstructionsSources.Classpath)
+                .addConfiguration("mappingInstructionsFilename", "/mappings-example.json")
+                .addConfiguration("rawXmlField", XML_INPUT_FIELD_NAME)
+                .addConfiguration("rawInputType", InputTypes.XML)
+                .addConfiguration("outJsonField", OUT_JSON_FIELD_NAME)
+                .addOutputLane("output")
+                .build();
+        runner.runInit();
+    }
+
+    private static final String BASIC_JSON_BOOK = "{\"book\": { \"author\": \"fred\" } }";
 
     private static final String REALISTIC_XML = "<?xml version=\"1.0\" encoding=\"utf-8\"?><?xml-stylesheet href=\"file:////edc-filer1/busdev/PropPubProjects/Research Starters/Common Documents/CSS/CSS_Salem.css\"?>\n" +
             "<!DOCTYPE book>\n" +

@@ -10,6 +10,8 @@ dependencies {
     compile "com.fasterxml.jackson.core:jackson-databind:$jackson_version"
     compile "com.streamsets:streamsets-datacollector-sdk:$streamsets_sdk_version"
 
+    compile group: 'com.amazonaws', name: 'aws-java-sdk-s3', version: version_aws_sdk
+
     compileOnly "com.streamsets:streamsets-datacollector-api:$streamsets_api_version"
     compileOnly "org.slf4j:slf4j-api:$slf4j_version"
 

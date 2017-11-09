@@ -10,6 +10,7 @@ buildscript {
     ext.version_lombok_gradleplugin = '1.10'
     ext.version_lombok = '1.16.18'
     ext.version_jetbrainsannotations = '13.0'
+    ext.version_aws_sdk = '1.11.226'
 
     repositories {
         mavenCentral()
@@ -24,7 +25,7 @@ buildscript {
 }
 
 group 'com.ebsco.entarch'
-version '1.0.8-SNAPSHOT'
+version '1.0.9-SNAPSHOT'
 
 
 subprojects {
