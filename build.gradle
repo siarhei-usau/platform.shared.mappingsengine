@@ -56,6 +56,7 @@ subprojects {
     }
 
     test {
+        environment "HOSTNAME", "localhost"
         systemProperty "file.encoding", "utf-8"
         systemProperty "java.net.preferIPv4Stack", "true"
         testLogging {
