@@ -1,0 +1,4 @@
+//For mapping-engine-streamsets-plugin
+grant codebase "file://${sdc.dist.dir}/user-libs/mapping-engine-streamsets-plugin/-" {
+  permission java.security.AllPermission;
+};
