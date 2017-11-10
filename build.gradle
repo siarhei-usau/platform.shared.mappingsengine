@@ -57,6 +57,10 @@ subprojects {
 
     test {
         systemProperty "file.encoding", "utf-8"
+        testLogging {
+            exceptionFormat "full" // default is "short"
+            events "started", "passed", "skipped", "failed", "standardOut", "standardError"
+        }
     }
 
     repositories {
