@@ -11,8 +11,6 @@ import com.streamsets.pipeline.sdk.ProcessorRunner;
 import com.streamsets.pipeline.sdk.RecordCreator;
 import com.streamsets.pipeline.sdk.StageRunner;
 import org.jetbrains.annotations.NotNull;
-import org.junit.After;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
@@ -30,20 +28,14 @@ import static org.junit.Assert.assertEquals;
 
 public class XmlToJsonCanonicalProcessorTest {
 
-    private ProcessorRunner runner;
     private static final String XML_INPUT_FIELD_NAME = "/rawXML";
     private static final String JSON_INPUT_FIELD_NAME = "/rawJSON";
     private static final String FILE_REF_FIELD_NAME = "/fileRef";
     private static final String OUT_JSON_FIELD_NAME = "/json";
 
-    @After
-    public void tearDown() throws Exception {
-        runner.runDestroy();
-    }
-
     @Test
     public void processorCanRunFromString() throws Exception {
-        runner = new ProcessorRunner.Builder(XmlToJsonCanonicalProcessor.class)
+        ProcessorRunner runner = new ProcessorRunner.Builder(XmlToJsonCanonicalProcessor.class)
                 .addConfiguration("mappingInstructionsSource", InstructionsSources.Inline)
                 .addConfiguration("mappingInstructions", getText())
                 .addConfiguration("rawXmlField", XML_INPUT_FIELD_NAME)
@@ -52,31 +44,34 @@ public class XmlToJsonCanonicalProcessorTest {
                 .addOutputLane("output")
                 .build();
         runner.runInit();
+        try {
+            Record record = RecordCreator.create();
+            record.set(Field.create(new HashMap<>()));
 
-        Record record = RecordCreator.create();
-        record.set(Field.create(new HashMap<>()));
+            write(record, XML_INPUT_FIELD_NAME, REALISTIC_XML);
 
-        write(record, XML_INPUT_FIELD_NAME, REALISTIC_XML);
+            StageRunner.Output output = runner.runProcess(singletonList(record));
 
-        StageRunner.Output output = runner.runProcess(singletonList(record));
+            assertEquals(1, output.getRecords().get("output").size());
 
-        assertEquals(1, output.getRecords().get("output").size());
+            Record result = output.getRecords().get("output").get(0);
+            result.getEscapedFieldPaths().forEach(it -> System.out.println("FILED: " + it));
+            String resultJson = result.get(OUT_JSON_FIELD_NAME).getValueAsString();
 
-        Record result = output.getRecords().get("output").get(0);
-        result.getEscapedFieldPaths().forEach(it -> System.out.println("FILED: " + it));
-        String resultJson = result.get(OUT_JSON_FIELD_NAME).getValueAsString();
-
-        System.out.println("OUTPUT FINAL RECORD:\n\n" + resultJson);
+            System.out.println("OUTPUT FINAL RECORD:\n\n" + resultJson);
+        } finally {
+            runner.runDestroy();
+        }
     }
 
     @NotNull
     private String getText() throws IOException {
-        return new String(Files.readAllBytes(Paths.get( "../sample/mappings-example.json")));
+        return new String(Files.readAllBytes(Paths.get("../sample/mappings-example.json")));
     }
 
     @Test
     public void processorCanRunFromFileRef() throws Exception {
-        runner = new ProcessorRunner.Builder(XmlToJsonCanonicalProcessor.class)
+        ProcessorRunner runner = new ProcessorRunner.Builder(XmlToJsonCanonicalProcessor.class)
                 .addConfiguration("mappingInstructionsSource", InstructionsSources.Inline)
                 .addConfiguration("mappingInstructions", getText())
                 .addConfiguration("rawXmlField", FILE_REF_FIELD_NAME)
@@ -85,42 +80,45 @@ public class XmlToJsonCanonicalProcessorTest {
                 .addOutputLane("output")
                 .build();
         runner.runInit();
+        try {
+            Record record = RecordCreator.create();
+            record.set(Field.create(new HashMap<>()));
 
-        Record record = RecordCreator.create();
-        record.set(Field.create(new HashMap<>()));
+            FileRef fakeFileRef = new FileRef(8192) {
+                @Override
+                public <T extends AutoCloseable> Set<Class<T>> getSupportedStreamClasses() {
+                    Set<Class<T>> result = new HashSet<>();
+                    result.add((Class<T>) InputStream.class);
+                    return result;
+                }
 
-        FileRef fakeFileRef = new FileRef(8192) {
-            @Override
-            public <T extends AutoCloseable> Set<Class<T>> getSupportedStreamClasses() {
-                Set<Class<T>> result = new HashSet<>();
-                result.add((Class<T>) InputStream.class);
-                return result;
-            }
+                @Override
+                public <T extends AutoCloseable> T createInputStream(Stage.Context context, Class<T> streamClassType) throws IOException {
+                    InputStream is = new ByteArrayInputStream(REALISTIC_XML.getBytes());
+                    return (T) is;
+                }
+            };
 
-            @Override
-            public <T extends AutoCloseable> T createInputStream(Stage.Context context, Class<T> streamClassType) throws IOException {
-                InputStream is = new ByteArrayInputStream(REALISTIC_XML.getBytes());
-                return (T) is;
-            }
-        };
+            record.set(FILE_REF_FIELD_NAME, Field.create(Field.Type.FILE_REF, fakeFileRef));
+            write(record, FILE_REF_FIELD_NAME, REALISTIC_XML.trim());
 
-        record.set(FILE_REF_FIELD_NAME, Field.create(Field.Type.FILE_REF, fakeFileRef));
-        write(record, FILE_REF_FIELD_NAME, REALISTIC_XML.trim());
+            StageRunner.Output output = runner.runProcess(singletonList(record));
 
-        StageRunner.Output output = runner.runProcess(singletonList(record));
+            assertEquals(1, output.getRecords().get("output").size());
 
-        assertEquals(1, output.getRecords().get("output").size());
+            Record result = output.getRecords().get("output").get(0);
+            result.getEscapedFieldPaths().forEach(it -> System.out.println("FILED: " + it));
+            String resultJson = result.get(OUT_JSON_FIELD_NAME).getValueAsString();
 
-        Record result = output.getRecords().get("output").get(0);
-        result.getEscapedFieldPaths().forEach(it -> System.out.println("FILED: " + it));
-        String resultJson = result.get(OUT_JSON_FIELD_NAME).getValueAsString();
-
-        System.out.println("OUTPUT FINAL RECORD:\n\n" + resultJson);
+            System.out.println("OUTPUT FINAL RECORD:\n\n" + resultJson);
+        } finally {
+            runner.runDestroy();
+        }
     }
 
     @Test
     public void processJsonInputType() throws Exception {
-        runner = new ProcessorRunner.Builder(XmlToJsonCanonicalProcessor.class)
+        ProcessorRunner runner = new ProcessorRunner.Builder(XmlToJsonCanonicalProcessor.class)
                 .addConfiguration("mappingInstructionsSource", InstructionsSources.Inline)
                 .addConfiguration("mappingInstructions", getText())
                 .addConfiguration("rawXmlField", JSON_INPUT_FIELD_NAME)
@@ -129,26 +127,29 @@ public class XmlToJsonCanonicalProcessorTest {
                 .addOutputLane("output")
                 .build();
         runner.runInit();
+        try {
+            Record record = RecordCreator.create();
+            record.set(Field.create(new HashMap<>()));
 
-        Record record = RecordCreator.create();
-        record.set(Field.create(new HashMap<>()));
+            write(record, JSON_INPUT_FIELD_NAME, BASIC_JSON_BOOK);
 
-        write(record, JSON_INPUT_FIELD_NAME, BASIC_JSON_BOOK);
+            StageRunner.Output output = runner.runProcess(singletonList(record));
 
-        StageRunner.Output output = runner.runProcess(singletonList(record));
+            assertEquals(1, output.getRecords().get("output").size());
 
-        assertEquals(1, output.getRecords().get("output").size());
+            Record result = output.getRecords().get("output").get(0);
+            result.getEscapedFieldPaths().forEach(it -> System.out.println("FILED: " + it));
+            String resultJson = result.get(OUT_JSON_FIELD_NAME).getValueAsString();
 
-        Record result = output.getRecords().get("output").get(0);
-        result.getEscapedFieldPaths().forEach(it -> System.out.println("FILED: " + it));
-        String resultJson = result.get(OUT_JSON_FIELD_NAME).getValueAsString();
-
-        System.out.println("OUTPUT FINAL RECORD:\n\n" + resultJson);
+            System.out.println("OUTPUT FINAL RECORD:\n\n" + resultJson);
+        } finally {
+            runner.runDestroy();
+        }
     }
 
     @Test
     public void canLoadMappingsFromFile() throws Exception {
-        runner = new ProcessorRunner.Builder(XmlToJsonCanonicalProcessor.class)
+        ProcessorRunner runner = new ProcessorRunner.Builder(XmlToJsonCanonicalProcessor.class)
                 .addConfiguration("mappingInstructionsSource", InstructionsSources.File)
                 .addConfiguration("mappingInstructionsFilename", "./src/test/resources/mappings-example.json")
                 .addConfiguration("rawXmlField", XML_INPUT_FIELD_NAME)
@@ -157,11 +158,12 @@ public class XmlToJsonCanonicalProcessorTest {
                 .addOutputLane("output")
                 .build();
         runner.runInit();
+        runner.runDestroy();
     }
 
     @Test
     public void canLoadMappingsFromClasspath() throws Exception {
-        runner = new ProcessorRunner.Builder(XmlToJsonCanonicalProcessor.class)
+        ProcessorRunner runner = new ProcessorRunner.Builder(XmlToJsonCanonicalProcessor.class)
                 .addConfiguration("mappingInstructionsSource", InstructionsSources.Classpath)
                 .addConfiguration("mappingInstructionsFilename", "/mappings-example.json")
                 .addConfiguration("rawXmlField", XML_INPUT_FIELD_NAME)
@@ -170,6 +172,7 @@ public class XmlToJsonCanonicalProcessorTest {
                 .addOutputLane("output")
                 .build();
         runner.runInit();
+        runner.runDestroy();
     }
 
     private static final String BASIC_JSON_BOOK = "{\"book\": { \"author\": \"fred\" } }";
