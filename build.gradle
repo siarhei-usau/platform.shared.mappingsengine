@@ -130,8 +130,8 @@ artifactory {
     publish {
         repository {
             repoKey = 'libs-snapshot-local'
-            username = 'exdeveloperro'//System.getenv('ArtifactoryUser')
-            password = 'AKqXzHDHpIztnzb4'//System.getenv('ArtifactoryPassword')
+            username = System.getenv('ArtifactoryUser')
+            password = System.getenv('ArtifactoryPassword')
         }
         defaults { publications('mavenJava') }
     }
