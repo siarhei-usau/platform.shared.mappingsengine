@@ -1,4 +1,9 @@
 apply plugin: 'io.spring.dependency-management'
+apply plugin: 'maven'
+apply plugin: 'distribution'
+apply plugin: 'com.jfrog.artifactory'
+apply plugin: 'maven-publish'
+apply plugin: 'java'
 
 buildscript {
     ext.streamsets_api_version = '2.7.+'
@@ -49,6 +54,7 @@ subprojects {
     apply plugin: 'maven-publish'
 
     compileJava.options.encoding = 'UTF-8'
+    sourceCompatibility = 1.8
 
     tasks.withType(JavaCompile) {
         options.encoding = 'UTF-8'
@@ -93,35 +99,40 @@ subprojects {
         compression = Compression.GZIP
     }
 
-    distributions {
-        main {
-            contents {
-                into('lib') {
-                    from jar
-                    from(project.configurations.runtime)
-                }
+
+}
+subprojects.each { subproject -> evaluationDependsOn(subproject.path)}
+    task allJar( type: Tar, dependsOn: subprojects.tasks["build"] ) {//if need JAR then change type ti 'Jar'
+        baseName = 'mapping-engine-allJar'
+        subprojects.each { subproject ->
+            from subproject.configurations.archives.allArtifacts.files.collect {
+                fileTree(it)
             }
         }
     }
 
-    publishing {
-        publications {
-            mavenJava(MavenPublication) {
-                artifact distTar
-                artifact jar
-            }
+artifacts {
+    archives allJar
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            artifact allJar
+//            artifact distTar
+//            artifact jar
         }
     }
+}
 
-    artifactory {
-        contextUrl = 'https://eis.jfrog.io/eis'
-        publish {
-            repository {
-                repoKey = 'libs-snapshot-local'
-                username = System.getenv('ArtifactoryUser')
-                password = System.getenv('ArtifactoryPassword')
-            }
-            defaults { publications('mavenJava') }
+artifactory {
+    contextUrl = 'https://eis.jfrog.io/eis'
+    publish {
+        repository {
+            repoKey = 'libs-snapshot-local'
+            username = 'exdeveloperro'//System.getenv('ArtifactoryUser')
+            password = 'AKqXzHDHpIztnzb4'//System.getenv('ArtifactoryPassword')
         }
+        defaults { publications('mavenJava') }
     }
 }
