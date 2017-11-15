@@ -74,7 +74,7 @@ public class PathUtils {
                         // going up from a.b[1].c[1] goes to b[1]
                         //         is ['a']['b'][1]['c'][1] to ['a']['b'][1]
                         if (tempParts.size() < 2) {
-                            throw new IllegalStateException("Cannot path upwards using $targetPath from starting " + matchingPath + ", attempted to pop up past the first element");
+                            throw new IllegalStateException("Cannot path upwards using "+targetPath+" from starting " + matchingPath + ", attempted to pop up past the first element");
                         }
                         String inspectPossibleArrayIndex = tempParts.get(tempParts.size() - 1);
                         // we are on an array index, so from perspective of popping up, start at the array
@@ -89,13 +89,13 @@ public class PathUtils {
 
                         // the ID of the landing point is this node if it is not an array index, otherwise is the node above
                         if (tempParts.isEmpty()) {
-                            throw new IllegalStateException("Cannot path upwards using $targetPath from starting " + matchingPath + ", attempted to pop up past the first element");
+                            throw new IllegalStateException("Cannot path upwards using "+targetPath+" from starting " + matchingPath + ", attempted to pop up past the first element");
                         }
                         String inspectLastPartAgain = tempParts.get(tempParts.size() - 1);
                         String checkPoint;
                         if (isNumber(inspectLastPartAgain)) {
                             if (tempParts.size() < 2) {
-                                throw new IllegalStateException("Cannot path upwards using $targetPath from starting " + matchingPath + ", attempted to pop up past the first element");
+                                throw new IllegalStateException("Cannot path upwards using "+targetPath+" from starting " + matchingPath + ", unexpected array index as first element");
                             }
                             checkPoint = tempParts.get(tempParts.size() - 2);
                         } else {
@@ -105,10 +105,10 @@ public class PathUtils {
                         if (checkPoint.startsWith("'")) {
                             String id = strip(checkPoint, "'");
                             if (!id.equals(upper)) {
-                                throw new IllegalStateException("Cannot path upwards using $targetPath from starting " + matchingPath + ", attempted to pop up past the first element");
+                                throw new IllegalStateException("Cannot path upwards using "+targetPath+" from starting "+matchingPath+", error popping up to "+upper+", found "+id+" instead");
                             }
                         } else {
-                            throw new IllegalStateException("Cannot path upwards using $targetPath from starting " + matchingPath + ", attempted to pop up past the first element");
+                            throw new IllegalStateException("Cannot path upwards using "+targetPath+" from starting " + matchingPath + ", the next part has no valid name");
                         }
                     }
                     return Match.of(matchingPath, lastPath);
@@ -207,11 +207,11 @@ public class PathUtils {
             Object baseNode = read.get(0);
             List<String> updateSteps = Arrays.asList(updatePath.trim().split(Pattern.quote(".")));
 
-            drillDownToUpdate(baseNode, updateSteps, jsonFragment, jsonProvider);
+            drillDownToUpdate(baseNode, updatePath, updateSteps, jsonFragment, jsonProvider);
         }
     }
 
-    private void drillDownToUpdate(Object startNode, List<String> steps, Object jsonFragment, JsonProvider provider) {
+    private void drillDownToUpdate(Object startNode, String updatePath, List<String> steps, Object jsonFragment, JsonProvider provider) {
         Object currentNode = startNode;
         List<String> currentSteps = steps;
 
@@ -252,7 +252,7 @@ public class PathUtils {
                 }
                 if ((checkArrayNode == null && (idx.equals("*") || idx.equals("0"))) ||
                         (checkArrayNode != null && !provider.isArray(checkArrayNode))) {
-                    throw new IllegalStateException("Expected array at $id in $baseNode / $updatePath during update traversal");
+                    throw new IllegalStateException("Expected array at "+id+" in "+startNode+" / "+updatePath+" during update traversal");
                 }
                 Object arrayNode;
                 if (checkArrayNode != null) {
@@ -270,7 +270,7 @@ public class PathUtils {
                         if (isLastStep) {
                             provider.setArrayIndex(arrayNode, i, jsonFragment);
                         } else {
-                            drillDownToUpdate(provider.getArrayIndex(arrayNode, i), currentSteps, jsonFragment, provider);
+                            drillDownToUpdate(provider.getArrayIndex(arrayNode, i), updatePath, currentSteps, jsonFragment, provider);
                         }
                     }
 
@@ -280,14 +280,14 @@ public class PathUtils {
                         } else {
                             Object emptyItem = provider.createMap();
                             provider.setArrayIndex(arrayNode, arraySize, emptyItem);
-                            drillDownToUpdate(emptyItem, currentSteps, jsonFragment, provider);
+                            drillDownToUpdate(emptyItem, updatePath, currentSteps, jsonFragment, provider);
                         }
                     }
                 } else if (idx.equals("0") || idx.equals("0+")) {
                     if (isLastStep) {
                         provider.setArrayIndex(arrayNode, 0, jsonFragment );
                     } else {
-                        drillDownToUpdate(provider.getArrayIndex(arrayNode, 0), steps, jsonFragment, provider);
+                        drillDownToUpdate(provider.getArrayIndex(arrayNode, 0), updatePath, steps, jsonFragment, provider);
                     }
 
                     if (arraySize == 0 && idx.endsWith("+")) {
@@ -296,7 +296,7 @@ public class PathUtils {
                         } else {
                             Object emptyItem = provider.createMap();
                             provider.setArrayIndex(arrayNode, arraySize, emptyItem);
-                            drillDownToUpdate(emptyItem, currentSteps, jsonFragment, provider);
+                            drillDownToUpdate(emptyItem, updatePath, currentSteps, jsonFragment, provider);
                         }
                     }
                 } else if (idx.equals("+")) {
@@ -305,10 +305,10 @@ public class PathUtils {
                     } else {
                         Object emptyItem = provider.createMap();
                         provider.setArrayIndex(arrayNode, arraySize, emptyItem);
-                        drillDownToUpdate(emptyItem, currentSteps, jsonFragment, provider);
+                        drillDownToUpdate(emptyItem, updatePath, currentSteps, jsonFragment, provider);
                     }
                 } else {
-                    throw new IllegalStateException("Update pathing contains invalid array modifier, $baseNode / $updatePath");
+                    throw new IllegalStateException("Update pathing contains invalid array modifier, " + startNode +" / "+updatePath);
                 }
             }
         }
