@@ -1,9 +1,9 @@
 apply plugin: 'io.spring.dependency-management'
 apply plugin: 'maven'
-apply plugin: 'distribution'
 apply plugin: 'com.jfrog.artifactory'
 apply plugin: 'maven-publish'
 apply plugin: 'java'
+apply plugin: 'com.github.johnrengelman.shadow'
 
 buildscript {
     ext.streamsets_api_version = '2.7.+'
@@ -35,6 +35,7 @@ buildscript {
         // The dependency management plugin changes Gradle's handling of a pom's exclusions so that they behave as they do in Maven.
         // https://spring.io/blog/2015/02/23/better-dependency-management-for-gradle
         classpath "io.spring.gradle:dependency-management-plugin:$dependency_management_version"
+        classpath 'com.github.jengelman.gradle.plugins:shadow:2.0.1'
     }
 }
 
@@ -49,9 +50,7 @@ subprojects {
     apply plugin: 'eclipse'
     apply plugin: 'idea'
     apply plugin: 'net.ltgt.apt'
-    apply plugin: 'distribution'
-    apply plugin: 'com.jfrog.artifactory'
-    apply plugin: 'maven-publish'
+    apply plugin: 'com.github.johnrengelman.shadow'
 
     compileJava.options.encoding = 'UTF-8'
     sourceCompatibility = 1.8
@@ -100,11 +99,15 @@ subprojects {
     }
 
 
+
 }
 subprojects.each { subproject -> evaluationDependsOn(subproject.path)}
-    task allJar( type: Tar, dependsOn: subprojects.tasks["build"] ) {//if need JAR then change type ti 'Jar'
-        baseName = 'mapping-engine-allJar'
+    task allTar( type: Tar, dependsOn: subprojects.tasks["build"] ) {
+        baseName = project.name
         subprojects.each { subproject ->
+            shadowJar {
+                include '*.jar'
+            }
             from subproject.configurations.archives.allArtifacts.files.collect {
                 fileTree(it)
             }
@@ -112,15 +115,15 @@ subprojects.each { subproject -> evaluationDependsOn(subproject.path)}
     }
 
 artifacts {
-    archives allJar
+    archives allTar
 }
 
 publishing {
     publications {
         mavenJava(MavenPublication) {
-            artifact allJar
-//            artifact distTar
-//            artifact jar
+            artifact allTar {
+                exclude "*.zip"
+            }
         }
     }
 }
