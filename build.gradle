@@ -3,7 +3,6 @@ apply plugin: 'maven'
 apply plugin: 'com.jfrog.artifactory'
 apply plugin: 'maven-publish'
 apply plugin: 'java'
-apply plugin: 'com.github.johnrengelman.shadow'
 
 buildscript {
     ext.streamsets_api_version = '2.7.+'
@@ -60,13 +59,11 @@ subprojects {
     }
 
     test {
-        environment "HOSTNAME", "localhost"
         systemProperty "file.encoding", "utf-8"
-        systemProperty "java.net.preferIPv4Stack", "true"
-        testLogging {
-            exceptionFormat "full" // default is "short"
-            events "started", "passed", "skipped", "failed", "standardOut", "standardError"
-        }
+//        testLogging {
+//            exceptionFormat "full" // default is "short"
+//            events "started", "passed", "skipped", "failed", "standardOut", "standardError"
+//        }
     }
 
     repositories {
@@ -97,18 +94,22 @@ subprojects {
     tasks.withType(Tar) {
         compression = Compression.GZIP
     }
-
-
+    shadowJar {
+        configurations = [project.configurations.runtime]
+//        destinationDir file('.')
+//        include '**/*-all.jar'
+    }
+    project.tasks.assemble.dependsOn project.tasks.shadowJar
+    artifacts {
+        archives shadowJar
+    }
 
 }
 subprojects.each { subproject -> evaluationDependsOn(subproject.path)}
     task allTar( type: Tar, dependsOn: subprojects.tasks["build"] ) {
         baseName = project.name
         subprojects.each { subproject ->
-            shadowJar {
-                include '*.jar'
-            }
-            from subproject.configurations.archives.allArtifacts.files.collect {
+            from subproject.configurations.archives.allArtifacts.files.filter {f -> f.name.endsWith('-all.jar')}.collect {
                 fileTree(it)
             }
         }
@@ -118,12 +119,11 @@ artifacts {
     archives allTar
 }
 
+
 publishing {
     publications {
         mavenJava(MavenPublication) {
-            artifact allTar {
-                exclude "*.zip"
-            }
+            artifact allTar
         }
     }
 }
