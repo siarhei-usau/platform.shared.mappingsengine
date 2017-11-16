@@ -64,7 +64,7 @@ Command-line options:
 
 |Option|Description|
 |------|-----------|
-|--xml|XML input file (required)|
+|--input|XML/JSON input file (required)|
 |--config|Mappings configuration file (required)|
 |--output|Optional output file (output is to stdout as well|
 
