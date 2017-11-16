@@ -50,6 +50,10 @@ subprojects {
     apply plugin: 'idea'
     apply plugin: 'net.ltgt.apt'
     apply plugin: 'com.github.johnrengelman.shadow'
+    apply plugin: 'distribution'
+    apply plugin: 'maven'
+    apply plugin: 'com.jfrog.artifactory'
+    apply plugin: 'maven-publish'
 
     compileJava.options.encoding = 'UTF-8'
     sourceCompatibility = 1.8
@@ -103,29 +107,23 @@ subprojects {
     artifacts {
         archives shadowJar
     }
-
-}
-subprojects.each { subproject -> evaluationDependsOn(subproject.path)}
-    task allTar( type: Tar, dependsOn: subprojects.tasks["build"] ) {
-        baseName = project.name
-        subprojects.each { subproject ->
-            from subproject.configurations.archives.allArtifacts.files.filter {f -> f.name.endsWith('-all.jar')}.collect {
-                fileTree(it)
+    distributions {
+        main {
+            contents {
+                into('lib') {
+                    from shadowJar
+                }
+            }
+        }
+    }
+    publishing {
+        publications {
+            mavenJava(MavenPublication) {
+                artifact shadowJar
             }
         }
     }
 
-artifacts {
-    archives allTar
-}
-
-
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            artifact allTar
-        }
-    }
 }
 
 artifactory {
