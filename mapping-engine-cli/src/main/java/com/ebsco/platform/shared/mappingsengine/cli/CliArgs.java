@@ -15,7 +15,7 @@ class CliArgs {
     private String configFileName;
 
     @Parameter(
-            names = {"--xml"},
+            names = {"--input"},
             description = "input XML filename",
             required = true
     )

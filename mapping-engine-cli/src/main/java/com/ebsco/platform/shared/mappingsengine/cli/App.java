@@ -12,11 +12,13 @@ import com.jayway.jsonpath.spi.json.JacksonJsonProvider;
 import com.jayway.jsonpath.spi.json.JsonProvider;
 import lombok.NonNull;
 import lombok.val;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 import java.io.*;
 import java.nio.charset.Charset;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 
 public class App {
@@ -72,6 +74,10 @@ public class App {
                 System.err.println("Error: " + ex.getMessage());
                 ex.printStackTrace();
                 System.exit(-2);
+            } catch (ParseException ex) {
+                System.err.println("Error: " + ex.getMessage());
+                ex.printStackTrace();
+                System.exit(-2);
             }
 
         } catch (ParameterException ex) {
@@ -86,7 +92,7 @@ public class App {
         System.exit(-1);
     }
 
-    public void run() throws IOException {
+    public void run() throws IOException, ParseException {
         MappingsEngineJsonConfig cfgFile = null;
         try (InputStream cfgInputStream = new FileInputStream(configFile)) {
             cfgFile = MappingsEngineJsonConfig.fromJson(cfgInputStream);
@@ -109,14 +115,23 @@ public class App {
 
         val mappings = MappingsEngine.builder().transforms(cfgFile.getTransforms()).transformerClasses(DefaultTransformers.TRANFORMERS).jsonProvider(parser.getConfig().getJsonProvider()).build();
 
+
         try (final InputStream xmlInputStream = new FileInputStream(inputXmlFile)) {
-            XmlToRecordParser.Result parsed = parser.parse(xmlInputStream);
             Map<String, Map<String, Object>> jsonObject = new HashMap<>();
-            jsonObject.put(parsed.getName(), (Map<String, Object>) parsed.getJsonNode());
+            String prettyJson = "";
+            if (inputXmlFile.toURI().toString().endsWith(".xml")) {
+                XmlToRecordParser.Result parsed = parser.parse(xmlInputStream);
+                jsonObject.put(parsed.getName(), (Map<String, Object>) parsed.getJsonNode());
+                mappings.processDocument(jsonObject);
+                prettyJson = new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(jsonObject);
+            } else if (inputXmlFile.toURI().toString().endsWith(".json")) {
+                JSONParser jsonParser = new JSONParser();
+                JSONObject pureJsonInputObject = (JSONObject) jsonParser.parse(
+                        new InputStreamReader(xmlInputStream, "UTF-8"));
+                mappings.processDocument(pureJsonInputObject);
+                prettyJson = new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(pureJsonInputObject);
+            }
 
-            mappings.processDocument(jsonObject);
-
-            val prettyJson = new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(jsonObject);
             if (outputJsonFile != null) {
                 try (OutputStream jsonOutputStream = new FileOutputStream(outputJsonFile)) {
                     jsonOutputStream.write(prettyJson.getBytes(Charset.forName("UTF-8")));
