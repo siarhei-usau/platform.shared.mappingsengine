@@ -35,6 +35,7 @@ buildscript {
         // https://spring.io/blog/2015/02/23/better-dependency-management-for-gradle
         classpath "io.spring.gradle:dependency-management-plugin:$dependency_management_version"
         classpath 'com.github.jengelman.gradle.plugins:shadow:2.0.1'
+        classpath 'ru.vyarus:gradle-pom-plugin:1.2.0'
     }
 }
 
@@ -54,6 +55,7 @@ subprojects {
     apply plugin: 'maven'
     apply plugin: 'com.jfrog.artifactory'
     apply plugin: 'maven-publish'
+    apply plugin: 'ru.vyarus.pom'
 
     compileJava.options.encoding = 'UTF-8'
     sourceCompatibility = 1.8
@@ -119,7 +121,9 @@ subprojects {
     publishing {
         publications {
             mavenJava(MavenPublication) {
+                from components.java
                 artifact shadowJar
+                artifact distTar
             }
         }
     }
