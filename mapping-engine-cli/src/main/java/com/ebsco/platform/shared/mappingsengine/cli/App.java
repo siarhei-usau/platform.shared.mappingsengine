@@ -116,7 +116,7 @@ public class App {
                 mappings.processDocument(jsonObject);
                 prettyJson = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(jsonObject);
             } else if (inputXmlFile.toURI().toString().endsWith(".json")) {
-                val pureJsonInputObject = mapper.readTree(inputXmlFile);
+                val pureJsonInputObject = mapper.readValue(inputXmlFile, Map.class);
                 mappings.processDocument(pureJsonInputObject);
                 prettyJson = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(pureJsonInputObject);
             }
