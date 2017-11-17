@@ -2,6 +2,8 @@
 
 Platform - Mappings Engine
 
+Confluence page: https://sslvpn.epnet.com/display/entarch/,DanaInfo=confluence+Mappings+Engine+-+platform.shared.mappingsengine
+
 ## Project Architecture
 
 The Mappings Engine is broken into 4 code modules:
