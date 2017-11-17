@@ -106,19 +106,19 @@ public class App {
 
         val mappings = MappingsEngine.builder().transforms(cfgFile.getTransforms()).transformerClasses(DefaultTransformers.TRANFORMERS).jsonProvider(parser.getConfig().getJsonProvider()).build();
 
-
         try (final InputStream xmlInputStream = new FileInputStream(inputXmlFile)) {
-            Map<String, Map<String, Object>> jsonObject = new HashMap<>();
             String prettyJson = "";
+            ObjectMapper mapper = new ObjectMapper();
             if (inputXmlFile.toURI().toString().endsWith(".xml")) {
+                Map<String, Map<String, Object>> jsonObject = new HashMap<>();
                 XmlToRecordParser.Result parsed = parser.parse(xmlInputStream);
                 jsonObject.put(parsed.getName(), (Map<String, Object>) parsed.getJsonNode());
                 mappings.processDocument(jsonObject);
-                prettyJson = new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(jsonObject);
+                prettyJson = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(jsonObject);
             } else if (inputXmlFile.toURI().toString().endsWith(".json")) {
-                val pureJsonInputObject = new ObjectMapper().readTree(inputXmlFile);
+                val pureJsonInputObject = mapper.readTree(inputXmlFile);
                 mappings.processDocument(pureJsonInputObject);
-                prettyJson = new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(pureJsonInputObject);
+                prettyJson = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(pureJsonInputObject);
             }
 
             if (outputJsonFile != null) {
