@@ -12,9 +12,6 @@ import com.jayway.jsonpath.spi.json.JacksonJsonProvider;
 import com.jayway.jsonpath.spi.json.JsonProvider;
 import lombok.NonNull;
 import lombok.val;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 
 import java.io.*;
 import java.nio.charset.Charset;
@@ -74,16 +71,10 @@ public class App {
                 System.err.println("Error: " + ex.getMessage());
                 ex.printStackTrace();
                 System.exit(-2);
-            } catch (ParseException ex) {
-                System.err.println("Error: " + ex.getMessage());
-                ex.printStackTrace();
-                System.exit(-2);
             }
-
         } catch (ParameterException ex) {
             printUsageAndExit(ex.getMessage(), ex.getJCommander());
         }
-
     }
 
     private static void printUsageAndExit(final String errMessage, final JCommander cmdline) {
@@ -92,7 +83,7 @@ public class App {
         System.exit(-1);
     }
 
-    public void run() throws IOException, ParseException {
+    public void run() throws IOException {
         MappingsEngineJsonConfig cfgFile = null;
         try (InputStream cfgInputStream = new FileInputStream(configFile)) {
             cfgFile = MappingsEngineJsonConfig.fromJson(cfgInputStream);
@@ -125,9 +116,7 @@ public class App {
                 mappings.processDocument(jsonObject);
                 prettyJson = new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(jsonObject);
             } else if (inputXmlFile.toURI().toString().endsWith(".json")) {
-                JSONParser jsonParser = new JSONParser();
-                JSONObject pureJsonInputObject = (JSONObject) jsonParser.parse(
-                        new InputStreamReader(xmlInputStream, "UTF-8"));
+                val pureJsonInputObject = new ObjectMapper().readTree(inputXmlFile);
                 mappings.processDocument(pureJsonInputObject);
                 prettyJson = new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(pureJsonInputObject);
             }
