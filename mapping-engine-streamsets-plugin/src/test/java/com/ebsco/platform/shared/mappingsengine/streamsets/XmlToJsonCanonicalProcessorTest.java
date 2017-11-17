@@ -100,7 +100,6 @@ public class XmlToJsonCanonicalProcessorTest {
             };
 
             record.set(FILE_REF_FIELD_NAME, Field.create(Field.Type.FILE_REF, fakeFileRef));
-            write(record, FILE_REF_FIELD_NAME, REALISTIC_XML.trim());
 
             StageRunner.Output output = runner.runProcess(singletonList(record));
 
