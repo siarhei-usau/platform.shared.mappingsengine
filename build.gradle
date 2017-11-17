@@ -21,7 +21,7 @@ buildscript {
 
     repositories {
         jcenter()
-        mavenLocal()
+        mavenLocal() // TODO: isn't this a bit dangerous, it will make a build succeed when sometimes shouldn't, also snapshot versions would be inconsistent
         mavenCentral()
         maven {
             url "https://plugins.gradle.org/m2/"
