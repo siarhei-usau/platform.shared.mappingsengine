@@ -50,8 +50,8 @@ public class ConcatJson implements JsonTransformer {
         //     concat the city and state within the same object
         //     remove the temp state field
 
-        // TODO: later we can look at doing prefix matching to find the closest match from each when selecting from multiple objects and allow
-        // mixed object selection:
+        // For mixed object selection we can look at doing prefix matching to find the closest match from each when selecting from multiple objects
+        // and allow mixed object selection:
         //
         //     $.state[0].cities[0].name  "Denver"            target match $.state[0].cities[0]+cityState
         //     $.state[0].cities[1].name  "Boulder"           target match $.state[0].cities[1]+cityState

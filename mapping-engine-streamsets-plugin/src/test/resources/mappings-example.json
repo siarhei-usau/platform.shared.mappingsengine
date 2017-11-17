@@ -22,7 +22,7 @@
     {
       "type": "lookup",
       "config": {
-        "lookupResource": "lookup_w_ui.txt",
+        "lookupResource": "classpath:/lookup_w_ui.txt.gz",
         "filters": [
           {
             "lookupField": "AN",

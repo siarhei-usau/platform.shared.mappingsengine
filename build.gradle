@@ -100,15 +100,18 @@ subprojects {
     tasks.withType(Tar) {
         compression = Compression.GZIP
     }
+
     shadowJar {
         configurations = [project.configurations.runtime]
 //        destinationDir file('.')
 //        include '**/*-all.jar'
     }
+
     project.tasks.assemble.dependsOn project.tasks.shadowJar
     artifacts {
         archives shadowJar
     }
+
     distributions {
         main {
             contents {
@@ -118,6 +121,7 @@ subprojects {
             }
         }
     }
+
     publishing {
         publications {
             mavenJava(MavenPublication) {

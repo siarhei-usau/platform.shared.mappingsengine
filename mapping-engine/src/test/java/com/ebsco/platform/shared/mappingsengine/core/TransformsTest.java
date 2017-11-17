@@ -1,14 +1,12 @@
 package com.ebsco.platform.shared.mappingsengine.core;
 
-import com.ebsco.platform.shared.mappingsengine.core.transformers.ConcatJson;
-import com.ebsco.platform.shared.mappingsengine.core.transformers.CopyJson;
-import com.ebsco.platform.shared.mappingsengine.core.transformers.DeleteJson;
+import com.ebsco.platform.shared.mappingsengine.core.transformers.*;
 import com.ebsco.platform.shared.mappingsengine.core.JsonTransformerContext;
-import com.ebsco.platform.shared.mappingsengine.core.transformers.RenameJson;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.Ignore;
 import org.junit.Test;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
@@ -154,9 +152,6 @@ public class TransformsTest extends BasePathTest {
                                                                { "name": "Boulder", "cityState": "Boulder, Colorado" }] , ...] }
          */
 
-
-        // TODO: this is failing until TestPathUtils all pass, one case is broken there, see testCasesFailingFromConcatTesting()
-
         new CopyJson("$.states[*].name", "@^states+cities[*].stateName").apply(context);
         printJson(context.getJsonObject(), "After Copy");
 
@@ -171,5 +166,27 @@ public class TransformsTest extends BasePathTest {
         assertEquals("Boulder, Colorado", context.queryForValue("$.states[0].cities[1].cityState"));
         assertEquals("San Francisco, California", context.queryForValue("$.states[1].cities[0].cityState"));
         assertEquals("Santa Cruz, California", context.queryForValue("$.states[1].cities[1].cityState"));
+    }
+
+    @Test
+    @Ignore
+    public void testLookupTransformer() throws Exception {
+        JsonTransformerContext context = makeContext();
+        List<LookupJson.LookupFilter> filters = new ArrayList<>();
+        filters.add(new LookupJson.LookupFilter("state", "$.states[*].name"));
+        filters.add(new LookupJson.LookupFilter("city", "$.states[*].city[*].name"));
+        filters.add(new LookupJson.LookupFilter("active", Collections.singletonList("true")));
+
+
+        new LookupJson("classpath:/lookup-test.tsv", filters, LookupJson.LookupApplyModes.merge, "$.states[*].city[*]",
+                new ObjectMapper().readValue("{ \"population\": \"{{population}}\" }", Map.class)).apply(context);
+
+        assertEquals("Denver", context.queryForValue("$.states[0].cities[0].name"));
+        assertEquals("3500000", context.queryForValue("$.states[0].cities[0].population"));
+        assertEquals("Boulder", context.queryForValue("$.states[0].cities[1].name"));
+        assertEquals("509490", context.queryForValue("$.states[0].cities[1].population"));
+
+        assertEquals("San Francisco", context.queryForValue("$.states[1].cities[0].name"));
+        assertEquals("Santa Cruz", context.queryForValue("$.states[1].cities[1].name"));
     }
 }
