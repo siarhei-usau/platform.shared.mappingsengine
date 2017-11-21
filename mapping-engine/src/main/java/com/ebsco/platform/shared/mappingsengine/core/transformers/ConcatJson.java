@@ -93,11 +93,13 @@ public class ConcatJson implements JsonTransformer {
             List<Object> sourceValuesInOrder = fromPaths.stream()
                     .map(sourceMap::get)
                     .filter(Objects::nonNull)
-                    .map(context::queryForValue)
+                    .map(context::queryForValues)
                     .filter(Objects::nonNull)
+                    .filter(l -> !l.isEmpty())
                     .collect(toList());
             String jsonFragment = sourceValuesInOrder.stream()
-                    .map(Object::toString) // TODO: check if it works
+                    .flatMap(l -> ((List<Object>)l).stream())
+                    .map(o -> o.toString())
                     .collect(joining(delimiter));
             context.applyUpdate(targetPath.getTargetBasePath(), targetPath.getTargetUpdatePath(),
                     jsonFragment);
