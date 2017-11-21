@@ -4,7 +4,11 @@ import com.ebsco.platform.shared.mappingsengine.core.JsonTransformer
 import com.ebsco.platform.shared.mappingsengine.core.JsonTransformerContext
 import com.ebsco.platform.shared.mappingsengine.core.ResolvedPaths
 
-class OriginalConcatJson(val fromPaths: List<String>, val delimiter: String, val targetPath: String) : JsonTransformer {
+class OriginalConcatJson() : JsonTransformer {
+    lateinit var fromPaths: List<String>
+    lateinit var delimiter: String
+    lateinit var targetPath: String
+
     override fun apply(context: JsonTransformerContext) {
         val allMappings: List<Pair<String, List<ResolvedPaths>>> = fromPaths.map {
             Pair(it, context.origianlQueryAndResolveTargetPaths(it, targetPath, true))

@@ -12,7 +12,8 @@ public class DefaultTransformers {
         TRANFORMERS.put("rename", RenameJson.class);
         TRANFORMERS.put("copy", CopyJson.class);
         TRANFORMERS.put("delete", DeleteJson.class);
-        TRANFORMERS.put("concat", ConcatJson.class);
+        TRANFORMERS.put("concat", OriginalConcatJson.class);
+        TRANFORMERS.put("concatBroken", ConcatJson.class);
         TRANFORMERS.put("lookup", LookupJson.class);
     }
 }

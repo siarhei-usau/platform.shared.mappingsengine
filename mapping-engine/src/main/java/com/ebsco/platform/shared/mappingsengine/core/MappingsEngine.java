@@ -67,14 +67,7 @@ public class MappingsEngine {
     }
 
     private static Map<String, Class<? extends JsonTransformer>> registerTransformers() {
-        Map<String, Class<? extends JsonTransformer>> result = new HashMap<>();
-        result.put("rename", RenameJson.class);
-        result.put("copy", CopyJson.class);
-        result.put("delete", DeleteJson.class);
-        result.put("concatBroken", ConcatJson.class);
-        result.put("concat", OriginalConcatJson.class);
-        result.put("lookup", LookupJson.class);
-        return result;
+        return DefaultTransformers.TRANFORMERS;
     }
 
 }
