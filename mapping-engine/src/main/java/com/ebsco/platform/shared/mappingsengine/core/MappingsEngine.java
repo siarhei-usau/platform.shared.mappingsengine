@@ -71,7 +71,8 @@ public class MappingsEngine {
         result.put("rename", RenameJson.class);
         result.put("copy", CopyJson.class);
         result.put("delete", DeleteJson.class);
-        result.put("concat", ConcatJson.class);
+        result.put("concatBroken", ConcatJson.class);
+        result.put("concat", OriginalConcatJson.class);
         result.put("lookup", LookupJson.class);
         return result;
     }

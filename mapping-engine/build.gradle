@@ -1,4 +1,4 @@
-
+apply plugin: 'kotlin'
 
 dependencies {
     compile project(":mapping-engine-config-json")
@@ -10,4 +10,18 @@ dependencies {
 
     testCompile project(':mapping-engine-xml-reader')
 
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlin_version"
+    testCompile "org.jetbrains.kotlin:kotlin-test:$kotlin_version"
+
+}
+
+compileKotlin {
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
+}
+compileTestKotlin {
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
 }

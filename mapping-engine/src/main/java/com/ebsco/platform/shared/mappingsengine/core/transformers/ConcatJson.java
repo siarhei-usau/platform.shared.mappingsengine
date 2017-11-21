@@ -40,27 +40,6 @@ public class ConcatJson implements JsonTransformer {
 
     @Override
     public void apply(@NotNull JsonTransformerContext context) {
-        // it gets complicated to handle cases where the source values are not in the same objects.  So we assume they are.
-        //
-        // Therefore we expect for every sourceJsonPath a list of matching paths of which some have target paths (if a value was present)
-        //
-        //
-        // So to handle the city/state case where state is at a level above cities and you want to build "city, state", you would do multiple transforms:
-        //     copy the state name into the city object
-        //     concat the city and state within the same object
-        //     remove the temp state field
-
-        // For mixed object selection we can look at doing prefix matching to find the closest match from each when selecting from multiple objects
-        // and allow mixed object selection:
-        //
-        //     $.state[0].cities[0].name  "Denver"            target match $.state[0].cities[0]+cityState
-        //     $.state[0].cities[1].name  "Boulder"           target match $.state[0].cities[1]+cityState
-        //     $.state[0].name            "Colorado"          none, but path $.state[0] is prefix match for above
-        //     $.state[1].cities[0].name  "San Francisco"     target match $.state[1].cities[0]+cityState
-        //     $.state[1].cities[1].name  "Santa Cruz"        target match $.state[1].cities[1]+cityState
-        //     $.state[1].name            "California"        none, but path $.state[1] is a prefix match for above
-        //
-
         Stream<FromPath2ResolvedTargetPathsList> mappings = fromPaths.stream()
                 .map(fromPath -> FromPath2ResolvedTargetPathsList.of(fromPath,
                         context.queryAndResolveTargetPaths(fromPath, targetPath, true)));

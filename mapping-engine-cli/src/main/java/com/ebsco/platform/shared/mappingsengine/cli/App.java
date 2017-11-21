@@ -35,6 +35,8 @@ public class App {
     }
 
     public static void main(String[] args) {
+        System.out.println("Mapping Engine - CLI");
+
         val parsedArgs = new CliArgs();
 
         try {
@@ -67,9 +69,13 @@ public class App {
 
             try {
                 new App(configFile, inputXmlFile, outputJsonFile).run();
-            } catch (IOException ex) {
+            } catch (Exception ex) {
                 System.err.println("Error: " + ex.getMessage());
-                ex.printStackTrace();
+                if (parsedArgs.getStackTrace()) {
+                    ex.printStackTrace();
+                } else {
+                    System.err.println("  (use the --stacktrace option to see full error stacktrace)");
+                }
                 System.exit(-2);
             }
         } catch (ParameterException ex) {

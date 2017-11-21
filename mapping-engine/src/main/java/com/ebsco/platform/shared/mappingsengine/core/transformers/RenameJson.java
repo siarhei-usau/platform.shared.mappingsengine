@@ -9,6 +9,7 @@ import com.jayway.jsonpath.JsonPath;
 import lombok.NonNull;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.IOException;
 import java.util.List;
 
 public class RenameJson implements JsonTransformer {
@@ -35,7 +36,12 @@ public class RenameJson implements JsonTransformer {
         fromToMapping.forEach(mapping -> {
             Object sourceValue = context.queryForValue(mapping.getSourcePath());
             context.applyUpdate(mapping, sourceValue);
-            context.deleteValue(mapping.getSourcePath());
+            try {
+                context.deleteValue(mapping.getSourcePath());
+            }
+            catch (Exception ex) {
+                // ignore, sometimes the transform breaks the ability to delete.
+            }
         });
     }
 }

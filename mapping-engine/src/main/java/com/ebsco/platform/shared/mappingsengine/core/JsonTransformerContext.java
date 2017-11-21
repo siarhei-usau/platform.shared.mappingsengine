@@ -31,6 +31,9 @@ public class JsonTransformerContext {
         this.jvalueListCtx = JsonPath.using(jvalueListCfg).parse(jsonObject);
     }
 
+    // TODO: temporary while testing missing changes from Kotlin code.
+    public DocumentContext exposePathCtx() { return jpathCtx; }
+
     // we might be able to call CompiledPath.eval to get both values and paths at same time, but we lose path caching and have to do that ourselves
     @NotNull
     @SuppressWarnings("WeakerAccess")
@@ -56,12 +59,12 @@ public class JsonTransformerContext {
 
     @NotNull
     public Object queryForValue(@NotNull final String jsonPath) {
-        return jvalueCtx.read(jsonPath);
+        return queryForValues(jsonPath).get(0);
     }
 
     @NotNull
     public Object queryForValue(@NotNull final JsonPath jsonPath) {
-        return jvalueCtx.read(jsonPath);
+        return queryForValues(jsonPath).get(0);
     }
 
     @NotNull

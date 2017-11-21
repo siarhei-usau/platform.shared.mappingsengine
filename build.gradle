@@ -18,6 +18,7 @@ buildscript {
     ext.version_jetbrainsannotations = '13.0'
     ext.version_aws_sdk = '1.11.226'
     ext.dependency_management_version = '0.6.0.RELEASE'
+    ext.kotlin_version = '1.1.60'
 
     repositories {
         jcenter()
@@ -36,12 +37,14 @@ buildscript {
         classpath "io.spring.gradle:dependency-management-plugin:$dependency_management_version"
         classpath 'com.github.jengelman.gradle.plugins:shadow:2.0.1'
         classpath 'ru.vyarus:gradle-pom-plugin:1.2.0'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
 }
 
+
 allprojects {
     group 'com.ebsco.entarch'
-    version '1.0.10'
+    version '1.0.11'
 }
 
 
@@ -50,7 +53,9 @@ subprojects {
     apply plugin: 'eclipse'
     apply plugin: 'idea'
     apply plugin: 'net.ltgt.apt'
-    apply plugin: 'com.github.johnrengelman.shadow'
+    if (project.name != "mapping-engine-cli") {
+        apply plugin: 'com.github.johnrengelman.shadow'
+    }
     apply plugin: 'distribution'
     apply plugin: 'maven'
     apply plugin: 'com.jfrog.artifactory'
@@ -101,22 +106,25 @@ subprojects {
         compression = Compression.GZIP
     }
 
-    shadowJar {
-        configurations = [project.configurations.runtime]
+    if (project.name != "mapping-engine-cli") {
+        shadowJar {
+            configurations = [project.configurations.runtime]
 //        destinationDir file('.')
 //        include '**/*-all.jar'
-    }
+        }
 
-    project.tasks.assemble.dependsOn project.tasks.shadowJar
-    artifacts {
-        archives shadowJar
-    }
+        project.tasks.assemble.dependsOn project.tasks.shadowJar
 
-    distributions {
-        main {
-            contents {
-                into('lib') {
-                    from shadowJar
+        artifacts {
+            archives shadowJar
+        }
+
+        distributions {
+            main {
+                contents {
+                    into('lib') {
+                        from shadowJar
+                    }
                 }
             }
         }
@@ -126,7 +134,9 @@ subprojects {
         publications {
             mavenJava(MavenPublication) {
                 from components.java
-                artifact shadowJar
+                if (project.name != "mapping-engine-cli") {
+                    artifact shadowJar
+                }
                 artifact distTar
             }
         }

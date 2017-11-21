@@ -8,5 +8,5 @@ dependencies {
     compile project(':mapping-engine-xml-reader')
 
     compile group: 'com.beust', name: 'jcommander', version: version_jcommander
-    // compile group: 'com.github.rvesse', name: 'airline', version: version_airline
+    compile group: 'ch.qos.logback', name: 'logback-classic', version: logback_version
 }

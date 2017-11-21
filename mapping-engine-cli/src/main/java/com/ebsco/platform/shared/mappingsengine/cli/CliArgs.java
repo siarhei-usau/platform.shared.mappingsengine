@@ -27,4 +27,11 @@ class CliArgs {
             required = false
     )
     private String jsonInputFileName;
+
+    @Parameter(
+            names = {"--stacktrace"},
+            description = "print stack trace on error",
+            required = false
+    )
+    private Boolean stackTrace = false;
 }
