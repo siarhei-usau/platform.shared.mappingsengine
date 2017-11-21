@@ -9,6 +9,12 @@ class OriginalConcatJson() : JsonTransformer {
     lateinit var delimiter: String
     lateinit var targetPath: String
 
+    constructor (fromPaths: List<String>, delimiter: String, targetPath: String): this() {
+        this.fromPaths = fromPaths
+        this.delimiter = delimiter
+        this.targetPath = targetPath
+    }
+
     override fun apply(context: JsonTransformerContext) {
         val allMappings: List<Pair<String, List<ResolvedPaths>>> = fromPaths.map {
             Pair(it, context.origianlQueryAndResolveTargetPaths(it, targetPath, true))
