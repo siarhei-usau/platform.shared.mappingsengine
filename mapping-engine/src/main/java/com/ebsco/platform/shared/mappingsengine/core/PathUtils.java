@@ -237,7 +237,9 @@ public class PathUtils {
                     provider.setProperty(currentNode, id, jsonFragment);
                 } else {
                     if (!provider.getPropertyKeys(currentNode).contains(id)) {
-                        provider.setProperty(currentNode, id, provider.createMap());
+                        Object newNode = provider.createMap();
+                        provider.setProperty(currentNode, id, newNode);
+                        currentNode = newNode;
                     } else {
                         currentNode = provider.getMapValue(currentNode, id);
                     }

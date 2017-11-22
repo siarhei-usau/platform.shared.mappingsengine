@@ -14,9 +14,6 @@ import static org.junit.Assert.assertEquals;
 
 public class TransformsTest extends BasePathTest {
 
-    private JsonTransformerContext makeContext() {
-        return new JsonTransformerContext(jpathCtx.json(), jpathConfig, jvalueConfig, jvalueListConfig);
-    }
 
     @Test
     public void testRenameTransform() throws Exception {
