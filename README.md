@@ -53,20 +53,20 @@ Build the CLI and install:
 Then run the tool on Mac/Linux:
 
 ```bash
-./mapping-engine-cli/build/install/mapping-engine-cli/bin/mapping-engine-cli  --xml sample/1920_rs_54172.xml --config sample/mappings-example.json 
+./mapping-engine-cli/build/install/mapping-engine-cli/bin/mapping-engine-cli  --input sample/1920_rs_54172.xml --config sample/mappings-example.json 
 ```
 
 or on Windows:
 
 ```bash
-mapping-engine-cli\build\install\mapping-engine-cli\bin\mapping-engine-cli.bat  --xml sample\1920_rs_54172.xml --config sample\mappings-example.json 
+mapping-engine-cli\build\install\mapping-engine-cli\bin\mapping-engine-cli.bat  --input sample\1920_rs_54172.xml --config sample\mappings-example.json 
 ```
 
 Command-line options:
 
 |Option|Description|
 |------|-----------|
-|--input|XML/JSON input file (required)|
+|--input|XML or JSON input file (required)|
 |--config|Mappings configuration file (required)|
 |--output|Optional output file (output is to stdout as well|
 
