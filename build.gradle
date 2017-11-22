@@ -22,7 +22,8 @@ buildscript {
 
     repositories {
         jcenter()
-        mavenLocal() // TODO: isn't this a bit dangerous, it will make a build succeed when sometimes shouldn't, also snapshot versions would be inconsistent
+        mavenLocal()
+        // TODO: isn't this a bit dangerous, it will make a build succeed when sometimes shouldn't, also snapshot versions would be inconsistent
         mavenCentral()
         maven {
             url "https://plugins.gradle.org/m2/"
@@ -31,13 +32,12 @@ buildscript {
     dependencies {
         classpath "net.ltgt.gradle:gradle-apt-plugin:0.13"
         classpath "org.jfrog.buildinfo:build-info-extractor-gradle:latest.release"
-    //    classpath "io.franzbecker:gradle-lombok:$version_lombok"
+        //    classpath "io.franzbecker:gradle-lombok:$version_lombok"
         // The dependency management plugin changes Gradle's handling of a pom's exclusions so that they behave as they do in Maven.
         // https://spring.io/blog/2015/02/23/better-dependency-management-for-gradle
         classpath "io.spring.gradle:dependency-management-plugin:$dependency_management_version"
-        classpath 'com.github.jengelman.gradle.plugins:shadow:2.0.1'
-        classpath 'ru.vyarus:gradle-pom-plugin:1.2.0'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath 'ru.vyarus:gradle-pom-plugin:1.2.0'
     }
 }
 
@@ -53,9 +53,6 @@ subprojects {
     apply plugin: 'eclipse'
     apply plugin: 'idea'
     apply plugin: 'net.ltgt.apt'
-    if (project.name != "mapping-engine-cli") {
-        apply plugin: 'com.github.johnrengelman.shadow'
-    }
     apply plugin: 'distribution'
     apply plugin: 'maven'
     apply plugin: 'com.jfrog.artifactory'
@@ -106,25 +103,12 @@ subprojects {
         compression = Compression.GZIP
     }
 
-    if (project.name != "mapping-engine-cli") {
-        shadowJar {
-            configurations = [project.configurations.runtime]
-//        destinationDir file('.')
-//        include '**/*-all.jar'
-        }
-
-        project.tasks.assemble.dependsOn project.tasks.shadowJar
-
-        artifacts {
-            archives shadowJar
-        }
-
-        distributions {
-            main {
-                contents {
-                    into('lib') {
-                        from shadowJar
-                    }
+    distributions {
+        main {
+            contents {
+                into('lib') {
+                    from jar
+                    from(project.configurations.runtime)
                 }
             }
         }
@@ -134,24 +118,22 @@ subprojects {
         publications {
             mavenJava(MavenPublication) {
                 from components.java
-                if (project.name != "mapping-engine-cli") {
-                    artifact shadowJar
-                }
                 artifact distTar
             }
         }
     }
 
 }
-
 artifactory {
     contextUrl = 'https://eis.jfrog.io/eis'
     publish {
         repository {
             repoKey = 'libs-snapshot-local'
-            username = System.getenv('ArtifactoryUser')
-            password = System.getenv('ArtifactoryPassword')
+            username = 'exdeveloperro'//System.getenv('ArtifactoryUser')
+            password = 'AKqXzHDHpIztnzb4'//System.getenv('ArtifactoryPassword')
         }
         defaults { publications('mavenJava') }
     }
 }
+
+
