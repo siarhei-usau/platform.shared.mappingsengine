@@ -107,6 +107,7 @@ subprojects {
         main {
             contents {
                 into('lib') {
+                    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
                     from jar
                     from(project.configurations.runtime)
                 }
@@ -118,7 +119,9 @@ subprojects {
         publications {
             mavenJava(MavenPublication) {
                 from components.java
-                artifact distTar
+                artifact distTar {
+                    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+                }
             }
         }
     }
