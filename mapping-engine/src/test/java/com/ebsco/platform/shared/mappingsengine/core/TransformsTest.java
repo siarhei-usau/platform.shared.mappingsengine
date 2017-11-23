@@ -186,4 +186,17 @@ public class TransformsTest extends BasePathTest {
         assertEquals("San Francisco", context.queryForValue("$.states[1].cities[0].name"));
         assertEquals("Santa Cruz", context.queryForValue("$.states[1].cities[1].name"));
     }
+
+    @Test
+    public void testInsertTransformer() throws Exception {
+        JsonTransformerContext context = makeContext();
+        String queryPath = "$.a.b[*].c.d[?(@.e == 'foo')]";
+        assertEquals(singletonList("$['a']['b'][0]['c']['d']"), context.queryForPaths(queryPath));
+
+        new InsertJson(queryPath, "@+testInsert", "[{\"fragment\":\"test\"},{\"2fragment\":\"2test\"}]" ).apply(context);
+        printJson(context.getJsonObject(), "Pretty JSON");
+
+        // a new node have been inserted
+        assertEquals(singletonList("$['a']['b'][0]['c']['d']['testInsert']"), context.queryForPaths(queryPath + "['testInsert']"));
+    }
 }
