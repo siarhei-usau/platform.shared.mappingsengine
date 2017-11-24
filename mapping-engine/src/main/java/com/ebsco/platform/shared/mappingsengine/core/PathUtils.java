@@ -283,6 +283,7 @@ public class PathUtils {
                             Object emptyItem = provider.createMap();
                             provider.setArrayIndex(arrayNode, arraySize, emptyItem);
                             drillDownToUpdate(emptyItem, updatePath, currentSteps, jsonFragment, provider);
+                            return;
                         }
                     }
                 } else if (idx.equals("0") || idx.equals("0+")) {
@@ -290,6 +291,7 @@ public class PathUtils {
                         provider.setArrayIndex(arrayNode, 0, jsonFragment );
                     } else {
                         drillDownToUpdate(provider.getArrayIndex(arrayNode, 0), updatePath, steps, jsonFragment, provider);
+                        return;
                     }
 
                     if (arraySize == 0 && idx.endsWith("+")) {
@@ -299,6 +301,7 @@ public class PathUtils {
                             Object emptyItem = provider.createMap();
                             provider.setArrayIndex(arrayNode, arraySize, emptyItem);
                             drillDownToUpdate(emptyItem, updatePath, currentSteps, jsonFragment, provider);
+                            return;
                         }
                     }
                 } else if (idx.equals("+")) {
@@ -308,6 +311,7 @@ public class PathUtils {
                         Object emptyItem = provider.createMap();
                         provider.setArrayIndex(arrayNode, arraySize, emptyItem);
                         drillDownToUpdate(emptyItem, updatePath, currentSteps, jsonFragment, provider);
+                        return;
                     }
                 } else {
                     throw new IllegalStateException("Update pathing contains invalid array modifier, " + startNode +" / "+updatePath);
