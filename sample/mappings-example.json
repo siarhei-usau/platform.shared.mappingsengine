@@ -51,10 +51,10 @@
     },
     {
       "type": "insert",
+      "testPath": "$.book.body[*]",
       "config": {
-        "testPath": "$.book.body[*]",
-        "targetPath": "@^book+insert",
-        "jsonFragment":[{"fragment":"test"},{"2fragment":"23test"}]
+        "targetPath": "$.book.body[*]+insertTest",
+        "jsonFragment":[{"one":"value1"},{"two":"value2"}]
       }
     },
     {
