@@ -20,33 +20,22 @@
       }
     },
     {
-      "type": "lookup",
+      "type": "concat",
       "config": {
-        "lookupResource": "classpath:/lookup_w_ui.txt.gz",
-        "filters": [
-          {
-            "lookupField": "AN",
-            "fromPath": "$.book[0].body[0].book-part[0].book-part-meta[0].book-part-id[0].value"
-          },
-          {
-            "lookupField": "Type",
-            "lookupValues": [
-              "subject",
-              "subjectgeo"
-            ]
-          }
+        "fromPaths": [
+          "$.book.body[0].book-part[0].book-part-meta[0].book-part-id[*].value",
+          "$.book.body[0].book-part[0].book-part-meta[0].book-part-id[?(@.pub-id-type=='doi')].id"
         ],
-        "targetPath": "$.book.front[0].article-meta[0]+article-categories[+].subj-group[*+]",
-        "jsonTemplate": {
-          "group_type": "ebsco_{{Type}}",
-          "subject": [
-            {
-              "id": "{{Term_Id}}",
-              "value": "{{Term}}"
-            }
-          ]
-        },
-        "mode": "merge"
+        "targetPath": "@^book-part-id+test",
+        "delimiter":","
+      }
+    },
+    {
+      "type": "insert",
+      "config": {
+        "testPath": "$.book.body[0]",
+        "targetPath": "@+insert",
+        "jsonFragment":[{"fragment":"test"},{"2fragment":"2test"}]
       }
     }
   ],
