@@ -198,5 +198,6 @@ public class TransformsTest extends BasePathTest {
 
         // a new node have been inserted
         assertEquals(singletonList("$['a']['b'][0]['c']['d']['testInsert']"), context.queryForPaths(queryPath + "['testInsert']"));
+        assertEquals("[{\"fragment\":\"test\"},{\"2fragment\":\"2test\"}]", context.queryForValue("$['a']['b'][0]['c']['d']['testInsert']"));
     }
 }
