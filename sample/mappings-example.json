@@ -56,6 +56,17 @@
         "targetPath": "@^book+insert",
         "jsonFragment":[{"fragment":"test"},{"2fragment":"23test"}]
       }
+    },
+    {
+      "type": "concat",
+      "config": {
+        "fromPaths": [
+          "$.book.body[0].book-part[0].book-part-meta[0].book-part-id[*].value",
+          "$.book.body[0].book-part[0].book-part-meta[0].book-part-id[?(@.pub-id-type=='doi')].id"
+        ],
+        "targetPath": "@^book-part-id+test",
+        "delimiter":","
+      }
     }
   ],
   "configuration": {
