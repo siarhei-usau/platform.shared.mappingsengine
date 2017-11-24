@@ -17,6 +17,9 @@ public class TransformsConfig {
     @Nullable
     String notes;
 
+    @Nullable
+    String testPath;
+
     @NonNull
     Map<String, ?> config;
 }

@@ -4,12 +4,11 @@ import com.ebsco.platform.shared.mappingsengine.config.TransformsConfig;
 import com.ebsco.platform.shared.mappingsengine.core.transformers.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.Configuration;
+import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.Option;
 import com.jayway.jsonpath.spi.json.JacksonJsonProvider;
 import com.jayway.jsonpath.spi.json.JsonProvider;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NonNull;
+import lombok.*;
 
 import java.util.HashMap;
 import java.util.List;
@@ -49,21 +48,44 @@ public class MappingsEngine {
     private final ObjectMapper mapper = new ObjectMapper();
 
     @Getter(lazy = true)
-    private final List<JsonTransformer> transformSteps = createTransformSteps();
+    private final List<ConfiguredTransform> transformSteps = createTransformSteps();
 
-    private List<JsonTransformer> createTransformSteps() {
-        return transforms.stream().map(cfg -> {
-            Class<? extends JsonTransformer> transformClass = transformerClasses.get(cfg.getType());
-            if (transformClass == null) {
-                throw new IllegalStateException("Transformer type " + cfg.getType() + " is not registered!");
+    public static class ConfiguredTransform {
+        public TransformsConfig config;
+        public JsonTransformer instance;
+        public JsonPath compiledTestPath = null;
+
+        public ConfiguredTransform(final TransformsConfig config, final JsonTransformer transformer) {
+            this.config = config;
+            this.instance = transformer;
+
+            if (config.getTestPath() != null) {
+                this.compiledTestPath = JsonPath.compile(config.getTestPath());
             }
-            return mapper.convertValue(cfg.getConfig(), transformClass);
-        }).collect(toList());
+        }
+    }
+
+    private List<ConfiguredTransform> createTransformSteps() {
+        return transforms.stream().map(cfg -> {
+                Class<? extends JsonTransformer> transformClass = transformerClasses.get(cfg.getType());
+                if (transformClass == null) {
+                    throw new IllegalStateException("Transformer type " + cfg.getType() + " is not registered!");
+                }
+                return new ConfiguredTransform(cfg, mapper.convertValue(cfg.getConfig(), transformClass));
+            }).collect(toList());
     }
 
     public void processDocument(Object jsonDocument) {
         JsonTransformerContext context = new JsonTransformerContext(jsonDocument, jsonPaths, jsonValue, jsonValueList);
-        getTransformSteps().forEach(step -> step.apply(context));
+        getTransformSteps().stream().filter(step -> {
+            if (step.compiledTestPath != null) {
+                List<String> checkPaths = context.queryForPaths(step.compiledTestPath);
+                return !checkPaths.isEmpty();
+            }
+            else {
+                return true;
+            }
+        }).forEach(step -> step.instance.apply(context));
     }
 
     private static Map<String, Class<? extends JsonTransformer>> registerTransformers() {

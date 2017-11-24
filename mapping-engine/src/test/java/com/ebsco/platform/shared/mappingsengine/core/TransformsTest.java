@@ -190,14 +190,12 @@ public class TransformsTest extends BasePathTest {
     @Test
     public void testInsertTransformer() throws Exception {
         JsonTransformerContext context = makeContext();
-        String queryPath = "$.a.b[*].c.d[?(@.e == 'foo')]";
-        assertEquals(singletonList("$['a']['b'][0]['c']['d']"), context.queryForPaths(queryPath));
 
-        new InsertJson(queryPath, "@+testInsert", "[{\"fragment\":\"test\"},{\"2fragment\":\"2test\"}]" ).apply(context);
+        Object fragment =  new ObjectMapper().readValue("[{\"one\":\"test1\"},{\"two\":\"test2\"}]", List.class);
+        new InsertJson("$+testInsert", fragment).apply(context);
         printJson(context.getJsonObject(), "Pretty JSON");
 
         // a new node have been inserted
-        assertEquals(singletonList("$['a']['b'][0]['c']['d']['testInsert']"), context.queryForPaths(queryPath + "['testInsert']"));
-        assertEquals("[{\"fragment\":\"test\"},{\"2fragment\":\"2test\"}]", context.queryForValue("$['a']['b'][0]['c']['d']['testInsert']"));
+        assertEquals(fragment, context.queryForValue(".testInsert"));
     }
 }
