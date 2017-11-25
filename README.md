@@ -50,17 +50,21 @@ Build the CLI and install:
 ./gradlew :mapping-engine-cli:install
 ```
 
-Then run the tool on Mac/Linux:
+Which installs a copy to `./mapping-engine-cli/build/install/mapping-engine-cli`.
+
+Then run the tool on Mac/Linux, execute this command from the install directory:
 
 ```bash
-./mapping-engine-cli/build/install/mapping-engine-cli/bin/mapping-engine-cli  --input sample/1920_rs_54172.xml --config sample/mappings-example.json 
+./bin/mapping-engine-cli  --input sample/1920_rs_54172.xml --config sample/mappings-example.json 
 ```
 
-or on Windows:
+or on Windows, excute this command from the install directory:
 
 ```bash
-mapping-engine-cli\build\install\mapping-engine-cli\bin\mapping-engine-cli.bat  --input sample\1920_rs_54172.xml --config sample\mappings-example.json 
+bin\mapping-engine-cli.bat  --input sample\1920_rs_54172.xml --config sample\mappings-example.json 
 ```
+
+Note:  you will need to fix the paths to the input and configuration files to be valid for your machine and the files you want to process.
 
 Command-line options:
 
@@ -69,6 +73,7 @@ Command-line options:
 |--input|XML or JSON input file (required)|
 |--config|Mappings configuration file (required)|
 |--output|Optional output file (output is to stdout as well|
+|--quiet (or -q)|Do not output anything other than error messages|
 
 
 _(TODO: place releases into GitHub releases)_
