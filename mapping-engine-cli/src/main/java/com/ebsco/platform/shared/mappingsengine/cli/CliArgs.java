@@ -15,8 +15,8 @@ class CliArgs {
     private String configFileName;
 
     @Parameter(
-            names = {"--input"},
-            description = "input XML filename",
+            names = {"--input", "--xml"},
+            description = "input XML or JSON filename",
             required = true
     )
     private String xmlInputFileName;
@@ -34,4 +34,11 @@ class CliArgs {
             required = false
     )
     private Boolean stackTrace = false;
+
+    @Parameter(
+            names = {"--quiet", "-q"},
+            description = "do not output anything to console other than errors",
+            required = false
+    )
+    private Boolean quiet = false;
 }

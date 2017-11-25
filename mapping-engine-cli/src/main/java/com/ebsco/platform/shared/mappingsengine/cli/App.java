@@ -28,16 +28,29 @@ public class App {
 
     private File outputJsonFile;
 
+    private boolean outputJsonToConsole = false;
+
+    public App(final File configFile, final File inputXmlFile, final File outputJsonFile, final boolean outputJsonToConsole) {
+        this.configFile = configFile;
+        this.inputXmlFile = inputXmlFile;
+        this.outputJsonFile = outputJsonFile;
+        this.outputJsonToConsole = true;
+    }
+
     public App(final File configFile, final File inputXmlFile, final File outputJsonFile) {
         this.configFile = configFile;
         this.inputXmlFile = inputXmlFile;
         this.outputJsonFile = outputJsonFile;
+        this.outputJsonToConsole = false;
     }
 
     public static void main(String[] args) {
-        System.out.println("Mapping Engine - CLI");
-
         val parsedArgs = new CliArgs();
+        boolean quiet = parsedArgs.getQuiet();
+
+        if (!quiet) {
+            System.out.println("Mapping Engine - CLI");
+        }
 
         try {
             val cmdline = JCommander.newBuilder()
@@ -67,8 +80,9 @@ public class App {
             }
 
 
+
             try {
-                new App(configFile, inputXmlFile, outputJsonFile).run();
+                new App(configFile, inputXmlFile, outputJsonFile, !quiet).run();
             } catch (Exception ex) {
                 System.err.println("Error: " + ex.getMessage());
                 if (parsedArgs.getStackTrace()) {
@@ -127,6 +141,11 @@ public class App {
                 prettyJson = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(pureJsonInputObject);
             }
 
+            if (outputJsonToConsole) {
+                System.out.println();
+                System.out.println(prettyJson);
+                System.out.println();
+            }
             if (outputJsonFile != null) {
                 try (OutputStream jsonOutputStream = new FileOutputStream(outputJsonFile)) {
                     jsonOutputStream.write(prettyJson.getBytes(Charset.forName("UTF-8")));
