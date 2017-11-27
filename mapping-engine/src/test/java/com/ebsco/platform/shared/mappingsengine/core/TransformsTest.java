@@ -213,7 +213,8 @@ public class TransformsTest extends BasePathTest {
         String valueField = "lastname";
 
         new PivotJson(sourcePath, targetPath, keyField, valueField).apply(context);
-        assertEquals(node, context.queryForValue("$.pivots"));
         printJson(context.getJsonObject(), "Pivot transform Pretty JSON");
+
+        assertEquals(node, context.queryForValue("$.pivots"));
     }
 }
