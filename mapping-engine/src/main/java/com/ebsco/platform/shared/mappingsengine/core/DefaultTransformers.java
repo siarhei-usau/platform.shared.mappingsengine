@@ -16,5 +16,6 @@ public class DefaultTransformers {
         TRANFORMERS.put("concatBroken", ConcatJson.class);
         TRANFORMERS.put("lookup", LookupJson.class);
         TRANFORMERS.put("insert", InsertJson.class);
+        TRANFORMERS.put("pivot", PivotJson.class);
     }
 }
