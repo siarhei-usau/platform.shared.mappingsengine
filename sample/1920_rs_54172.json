@@ -11,6 +11,18 @@
         "value" : "10.3331/sp_ency"
       } ]
     } ],
+      "abstract-group": [
+          {
+              "abstract": "some text for author blurb",
+              "lang": "en",
+              "abstract-type": "author"
+          },
+          {
+              "abstract": "some main thingy",
+              "lang": "en",
+              "abstract-type": "main"
+          }
+      ],
     "book-meta" : [ {
       "book-id" : [ {
         "pub-id-type" : "doi",

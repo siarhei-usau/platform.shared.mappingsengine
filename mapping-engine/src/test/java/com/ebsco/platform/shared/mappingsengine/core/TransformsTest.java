@@ -3,6 +3,8 @@ package com.ebsco.platform.shared.mappingsengine.core;
 import com.ebsco.platform.shared.mappingsengine.core.transformers.*;
 import com.ebsco.platform.shared.mappingsengine.core.JsonTransformerContext;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -191,11 +193,26 @@ public class TransformsTest extends BasePathTest {
     public void testInsertTransformer() throws Exception {
         JsonTransformerContext context = makeContext();
 
-        Object fragment =  new ObjectMapper().readValue("[{\"one\":\"test1\"},{\"two\":\"test2\"}]", List.class);
+        Object fragment = new ObjectMapper().readValue("[{\"one\":\"test1\"},{\"two\":\"test2\"}]", List.class);
         new InsertJson("$+testInsert", fragment).apply(context);
         printJson(context.getJsonObject(), "Pretty JSON");
 
         // a new node have been inserted
         assertEquals(fragment, context.queryForValue(".testInsert"));
+    }
+
+    @Test
+    public void testPivotTransformer() throws Exception {
+        JsonTransformerContext context = makeContext();
+
+        String sourcePath = "$.people[0]";
+        String targetPath = "$+pivots";
+        String keyField = "firstname";
+        String valueField = "lastname";
+
+        new PivotJson(sourcePath, targetPath, keyField, valueField).apply(context);
+        printJson(context.getJsonObject(), "Pivot transform Pretty JSON");
+
+        assertEquals("Smith", context.queryForValue("$.pivots.David"));
     }
 }

@@ -67,6 +67,15 @@
         "targetPath": "@^book-part-id+test",
         "delimiter":","
       }
+    },
+    {
+      "type": "pivot",
+      "config": {
+        "fromPath": "$.book.abstract-group[*]",
+        "keyField": "abstract-type",
+        "valueField": "abstract",
+        "targetPath": "$+abstract"
+      }
     }
   ],
   "configuration": {
