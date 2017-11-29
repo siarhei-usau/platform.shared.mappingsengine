@@ -204,8 +204,6 @@ public class TransformsTest extends BasePathTest {
     @Test
     public void testPivotTransformer() throws Exception {
         JsonTransformerContext context = makeContext();
-        ObjectNode node = JsonNodeFactory.instance.objectNode();
-        node.put("David","Smith");
 
         String sourcePath = "$.people[0]";
         String targetPath = "$+pivots";
@@ -215,6 +213,6 @@ public class TransformsTest extends BasePathTest {
         new PivotJson(sourcePath, targetPath, keyField, valueField).apply(context);
         printJson(context.getJsonObject(), "Pivot transform Pretty JSON");
 
-        assertEquals(node, context.queryForValue("$.pivots"));
+        assertEquals("Smith", context.queryForValue("$.pivots.David"));
     }
 }

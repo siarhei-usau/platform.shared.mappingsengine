@@ -13,6 +13,7 @@ import lombok.val;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
+import java.util.Map;
 
 public class PivotJson implements JsonTransformer {
     @NonNull
@@ -35,7 +36,6 @@ public class PivotJson implements JsonTransformer {
                      @NotNull @JsonProperty("keyField") String keyField,
                      @NotNull @JsonProperty("valueField") String valueField) {
         this.fromPath = fromPath;
-        if (!targetPath.startsWith("$")) throw new IllegalArgumentException("targetPath must be absolute path");
         this.targetPath = targetPath;
         this.keyField = keyField;
         this.valueField = valueField;
@@ -44,15 +44,17 @@ public class PivotJson implements JsonTransformer {
 
     @Override
     public void apply(@NotNull JsonTransformerContext context) {
-        List<ResolvedPaths> fromToMapping = context.queryAndResolveTargetPaths("$", targetPath);
-        ObjectNode node = JsonNodeFactory.instance.objectNode();
-        context.queryForValues(compiledSourceJsonPath).forEach(v -> {
-            val abstractTypeFieldValue = context.getJpathCtx().configuration().jsonProvider().getMapValue(v, keyField);
-            val abstractFieldValue = context.getJpathCtx().configuration().jsonProvider().getMapValue(v, valueField);
-            node.put(abstractTypeFieldValue.toString(), abstractFieldValue.toString());
-        });
+        List<ResolvedPaths> fromToMapping = context.queryAndResolveTargetPaths(fromPath, targetPath);
         fromToMapping.forEach(mapping -> {
-            context.applyUpdate(mapping, node);
+            Object fromNode = context.queryForValue(mapping.sourcePath);
+            if (!context.getJpathCtx().configuration().jsonProvider().isMap(fromNode)) {
+                throw new IllegalStateException("Expected an object at " + mapping.sourcePath);
+            }
+            String key = context.getJpathCtx().configuration().jsonProvider().getMapValue(fromNode, keyField).toString();
+            Object value = context.getJpathCtx().configuration().jsonProvider().getMapValue(fromNode, valueField);
+            String updatePath = mapping.targetUpdatePath;
+            if (!"".equals(updatePath)) updatePath = updatePath + "." + key;
+            context.applyUpdate(mapping.targetBasePath, updatePath, value);
         });
     }
 }
