@@ -17,7 +17,11 @@ import io.burt.jmespath.jackson.JacksonRuntime;
 import lombok.NonNull;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 public class MultiSelectJMESJson implements JsonTransformer {
@@ -60,26 +64,22 @@ public class MultiSelectJMESJson implements JsonTransformer {
     public void apply(@NotNull JsonTransformerContext context) {
         Object sourceValue = context.queryForValue(fromPath);
         JsonNode input = mapper.convertValue(sourceValue, JsonNode.class);
+
+        List<String> allMatches = new ArrayList<String>();
+        Pattern pattern = Pattern.compile("\"[a-z-]+\"");
+        Matcher matcher = pattern.matcher(filterExpression);
+        while (matcher.find()) {
+            allMatches.add(matcher.group().replace("\"",""));
+        }
         //check if any fields ara missing in the input, in order not to brake array structure
-        for(int i=0; i< input.size(); i++) {
-            if (input.get(i).findValue("rid") == null ) {
-                ObjectNode jNode = ((ArrayNode) input.get(i)).addObject();
-                jNode.put("rid", "null");
-            }
-            if (input.get(i).findValue("given-names") == null ) {
-                ObjectNode jNode = ((ArrayNode) input.get(i)).addObject();
-                jNode.put("given-names", "null");
-            }
-            if (input.get(i).findValue("surname") == null ) {
-                ObjectNode jNode = ((ArrayNode) input.get(i)).addObject();
-                jNode.put("surname", "null");
-            }
-            if (input.get(i).findValue("contrib-id-string") == null ) {
-                ObjectNode jNode = ((ArrayNode) input.get(i)).addObject();
-                jNode.put("contrib-id-string", "null");
+        for (int i = 0; i < input.size(); i++) {
+            for (int j = 0; j < allMatches.size(); j++) {
+                if (input.get(i).findValue(allMatches.get(j)) == null) {
+                    ObjectNode jNode = ((ArrayNode) input.get(i)).addObject();
+                    jNode.put(allMatches.get(j), "null");
+                }
             }
         }
-
 
         for (int i = 0; i < input.size(); i++) {
             if (i > 0) {
