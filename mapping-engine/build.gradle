@@ -13,6 +13,9 @@ dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlin_version"
     testCompile "org.jetbrains.kotlin:kotlin-test:$kotlin_version"
 
+    // https://mvnrepository.com/artifact/com.amazonaws/jmespath-java
+    compile group: 'io.burt', name: 'jmespath-jackson', version: '0.2.0'
+
 }
 
 compileKotlin {

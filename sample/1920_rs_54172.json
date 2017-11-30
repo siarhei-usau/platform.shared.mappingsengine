@@ -150,5 +150,59 @@
         } ]
       } ]
     } ]
-  }
+
+  }  ,"contrib": [
+  [
+    {
+      "rid": 1
+    },
+    {
+      "contrib-type": "author"
+    },
+    {
+      "given-names": "Zhenmu"
+    },
+    {
+      "surname": "Chen"
+    },
+    {
+      "contrib-id-string": "38787138"
+    }
+  ],
+  [
+    {
+      "rid": 2
+    },
+    {
+      "contrib-type": "author"
+    },
+    {
+      "given-names": "Patrick Mark"
+    },
+    {
+      "surname": "Singh"
+    },
+    {
+      "contrib-id-string": "31080011"
+    }
+  ],
+  [
+    {
+      "rid": 3
+    },
+    {
+      "contrib-type": "author"
+    },
+    {
+      "given-names": "Young-Do"
+    },
+    {
+      "surname": "Choi"
+    },
+    {
+      "contrib-id-string": "17299604"
+    }
+  ]
+]
+}
 }

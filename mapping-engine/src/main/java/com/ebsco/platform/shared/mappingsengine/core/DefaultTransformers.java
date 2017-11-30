@@ -17,5 +17,6 @@ public class DefaultTransformers {
         TRANFORMERS.put("lookup", LookupJson.class);
         TRANFORMERS.put("insert", InsertJson.class);
         TRANFORMERS.put("pivot", PivotJson.class);
+        TRANFORMERS.put("multiselect", MultiSelectHashJMESJson.class);
     }
 }
