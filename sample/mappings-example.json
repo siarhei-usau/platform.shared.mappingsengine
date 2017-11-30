@@ -81,7 +81,7 @@
       "type": "multiselect",
       "config": {
         "fromPath": "$.contrib",
-        "filterExpression": "{rid: [].\"rid\" | [0], ctype: [].\"contrib-id-string\" | [0], name: [].\"given-names\" | [0]}",
+        "filterExpression": "{rid: [].\"rid\" | [0], ctype: [].\"contrib-id-string\" | [0], name: [].\"given-names\" | [0], surname: [].\"surname\" | [0]}",
         "targetPath": "$+contribresult"
       }
     }

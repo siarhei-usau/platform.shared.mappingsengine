@@ -5,9 +5,11 @@ import com.ebsco.platform.shared.mappingsengine.core.JsonTransformerContext;
 import com.ebsco.platform.shared.mappingsengine.core.ResolvedPaths;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.jayway.jsonpath.JsonPath;
 import io.burt.jmespath.Expression;
 import io.burt.jmespath.JmesPath;
@@ -18,7 +20,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 
 
-public class MultiSelectHashJMESJson implements JsonTransformer {
+public class MultiSelectJMESJson implements JsonTransformer {
     // The first thing you need is a runtime. These objects can compile expressions
 // and they are specific to the kind of structure you want to search in.
 // For most purposes you want the Jackson runtime, it can search in JsonNode
@@ -45,9 +47,9 @@ public class MultiSelectHashJMESJson implements JsonTransformer {
 
 
     @JsonCreator
-    public MultiSelectHashJMESJson(@NotNull @JsonProperty("fromPath") String fromPath,
-                                   @NotNull @JsonProperty("targetPath") String targetPath,
-                                   @NotNull @JsonProperty("filterExpression") String filterExpression) {
+    public MultiSelectJMESJson(@NotNull @JsonProperty("fromPath") String fromPath,
+                               @NotNull @JsonProperty("targetPath") String targetPath,
+                               @NotNull @JsonProperty("filterExpression") String filterExpression) {
         this.fromPath = fromPath;
         this.targetPath = targetPath;
         this.compiledSourceJsonPath = JsonPath.compile(this.fromPath);
@@ -58,6 +60,27 @@ public class MultiSelectHashJMESJson implements JsonTransformer {
     public void apply(@NotNull JsonTransformerContext context) {
         Object sourceValue = context.queryForValue(fromPath);
         JsonNode input = mapper.convertValue(sourceValue, JsonNode.class);
+        //check if any fields ara missing in the input, in order not to brake array structure
+        for(int i=0; i< input.size(); i++) {
+            if (input.get(i).findValue("rid") == null ) {
+                ObjectNode jNode = ((ArrayNode) input.get(i)).addObject();
+                jNode.put("rid", "null");
+            }
+            if (input.get(i).findValue("given-names") == null ) {
+                ObjectNode jNode = ((ArrayNode) input.get(i)).addObject();
+                jNode.put("given-names", "null");
+            }
+            if (input.get(i).findValue("surname") == null ) {
+                ObjectNode jNode = ((ArrayNode) input.get(i)).addObject();
+                jNode.put("surname", "null");
+            }
+            if (input.get(i).findValue("contrib-id-string") == null ) {
+                ObjectNode jNode = ((ArrayNode) input.get(i)).addObject();
+                jNode.put("contrib-id-string", "null");
+            }
+        }
+
+
         for (int i = 0; i < input.size(); i++) {
             if (i > 0) {
                 filterExpression = filterExpression.replaceAll("\\d", String.valueOf(i));
