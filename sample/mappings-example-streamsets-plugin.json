@@ -1,0 +1,90 @@
+{
+  "metadata": {
+    "id": "rs-mappings",
+    "version": "1.0.0",
+    "primaryKey": "$.book.body[0].book-part[0].book-part-meta[0].doi"
+  },
+  "transforms": [
+    {
+      "type": "rename",
+      "config": {
+        "fromPath": "$.book.body[0].book-part[0].book-part-meta[0].book-part-id[*].value",
+        "targetPath": "@^book-part-id+id"
+      }
+    },
+    {
+      "type": "copy",
+      "config": {
+        "fromPath": "$.book.body[0].book-part[0].book-part-meta[0].book-part-id[?(@.pub-id-type=='doi')].id",
+        "targetPath": "@^book-part-id^book-part-meta+doi"
+      }
+    },
+    {
+      "type": "lookup",
+      "config": {
+        "lookupResource": "classpath:/lookup_w_ui.txt.gz",
+        "filters": [
+          {
+            "lookupField": "AN",
+            "fromPath": "$.book[0].body[0].book-part[0].book-part-meta[0].book-part-id[0].value"
+          },
+          {
+            "lookupField": "Type",
+            "lookupValues": [
+              "subject",
+              "subjectgeo"
+            ]
+          }
+        ],
+        "targetPath": "$.book.front[0].article-meta[0]+article-categories[+].subj-group[*+]",
+        "jsonTemplate": {
+          "group_type": "ebsco_{{Type}}",
+          "subject": [
+            {
+              "id": "{{Term_Id}}",
+              "value": "{{Term}}"
+            }
+          ]
+        },
+        "mode": "merge"
+      }
+    },
+    {
+      "type": "insert",
+      "testPath": "$.book.body[*]",
+      "config": {
+        "targetPath": "$.book.body[*]+insertTest",
+        "jsonFragment":[{"one":"value1"},{"two":"value2"}]
+      }
+    },
+    {
+      "type": "concat",
+      "config": {
+        "fromPaths": [
+          "$.book.body[0].book-part[0].book-part-meta[0].book-part-id[*].value",
+          "$.book.body[0].book-part[0].book-part-meta[0].book-part-id[?(@.pub-id-type=='doi')].id"
+        ],
+        "targetPath": "@^book-part-id+test",
+        "delimiter":","
+      }
+    },
+    {
+      "type": "pivot",
+      "config": {
+        "fromPath": "$.book.abstract-group[*]",
+        "keyField": "abstract-type",
+        "valueField": "abstract",
+        "targetPath": "$+abstract"
+      }
+    }
+  ],
+  "configuration": {
+    "xml2json": {
+      "embedLiteralXmlAtPaths": [
+        "//book[*]/body[*]/book-part[*]/book-front[*]/sec",
+        "//book[*]/body[*]/book-part[*]/body[*]/sec",
+        "//book[*]/body[*]/book-part[*]/book-part-meta[*]/abstract/p"
+      ]
+    }
+  }
+}

@@ -34,7 +34,6 @@ public class XmlToJsonCanonicalProcessorTest {
     private static final String OUT_JSON_FIELD_NAME = "/json";
 
     @Test
-    @Ignore
     public void processorCanRunFromString() throws Exception {
         ProcessorRunner runner = new ProcessorRunner.Builder(XmlToJsonCanonicalProcessor.class)
                 .addConfiguration("mappingInstructionsSource", InstructionsSources.Inline)
@@ -67,11 +66,10 @@ public class XmlToJsonCanonicalProcessorTest {
 
     @NotNull
     private String getText() throws IOException {
-        return new String(Files.readAllBytes(Paths.get("../sample/mappings-example.json")));
+        return new String(Files.readAllBytes(Paths.get("../sample/mappings-example-streamsets-plugin.json")));
     }
 
     @Test
-    @Ignore
     public void processorCanRunFromFileRef() throws Exception {
         ProcessorRunner runner = new ProcessorRunner.Builder(XmlToJsonCanonicalProcessor.class)
                 .addConfiguration("mappingInstructionsSource", InstructionsSources.Inline)
@@ -118,7 +116,6 @@ public class XmlToJsonCanonicalProcessorTest {
     }
 
     @Test
-    @Ignore
     public void processJsonInputType() throws Exception {
         ProcessorRunner runner = new ProcessorRunner.Builder(XmlToJsonCanonicalProcessor.class)
                 .addConfiguration("mappingInstructionsSource", InstructionsSources.Inline)
@@ -153,7 +150,7 @@ public class XmlToJsonCanonicalProcessorTest {
     public void canLoadMappingsFromFile() throws Exception {
         ProcessorRunner runner = new ProcessorRunner.Builder(XmlToJsonCanonicalProcessor.class)
                 .addConfiguration("mappingInstructionsSource", InstructionsSources.File)
-                .addConfiguration("mappingInstructionsFilename", "./src/test/resources/mappings-example.json")
+                .addConfiguration("mappingInstructionsFilename", "./src/test/resources/mappings-example-streamsets-plugin.json")
                 .addConfiguration("rawXmlField", XML_INPUT_FIELD_NAME)
                 .addConfiguration("rawInputType", InputTypes.XML)
                 .addConfiguration("outJsonField", OUT_JSON_FIELD_NAME)
@@ -167,7 +164,7 @@ public class XmlToJsonCanonicalProcessorTest {
     public void canLoadMappingsFromClasspath() throws Exception {
         ProcessorRunner runner = new ProcessorRunner.Builder(XmlToJsonCanonicalProcessor.class)
                 .addConfiguration("mappingInstructionsSource", InstructionsSources.Classpath)
-                .addConfiguration("mappingInstructionsFilename", "/mappings-example.json")
+                .addConfiguration("mappingInstructionsFilename", "/mappings-example-streamsets-plugin.json")
                 .addConfiguration("rawXmlField", XML_INPUT_FIELD_NAME)
                 .addConfiguration("rawInputType", InputTypes.XML)
                 .addConfiguration("outJsonField", OUT_JSON_FIELD_NAME)

@@ -5,7 +5,6 @@ import com.ebsco.platform.shared.mappingsengine.core.JsonTransformerContext;
 import com.ebsco.platform.shared.mappingsengine.core.ResolvedPaths;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -19,7 +18,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -69,7 +67,7 @@ public class MultiSelectJMESJson implements JsonTransformer {
         Pattern pattern = Pattern.compile("\"[a-z-]+\"");
         Matcher matcher = pattern.matcher(filterExpression);
         while (matcher.find()) {
-            allMatches.add(matcher.group().replace("\"",""));
+            allMatches.add(matcher.group().replace("\"", ""));
         }
         //check if any fields ara missing in the input, in order not to brake array structure
         for (int i = 0; i < input.size(); i++) {
