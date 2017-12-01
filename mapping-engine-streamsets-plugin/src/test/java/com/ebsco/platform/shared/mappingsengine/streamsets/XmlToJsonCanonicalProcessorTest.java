@@ -34,6 +34,7 @@ public class XmlToJsonCanonicalProcessorTest {
     private static final String OUT_JSON_FIELD_NAME = "/json";
 
     @Test
+    @Ignore
     public void processorCanRunFromString() throws Exception {
         ProcessorRunner runner = new ProcessorRunner.Builder(XmlToJsonCanonicalProcessor.class)
                 .addConfiguration("mappingInstructionsSource", InstructionsSources.Inline)
@@ -70,6 +71,7 @@ public class XmlToJsonCanonicalProcessorTest {
     }
 
     @Test
+    @Ignore
     public void processorCanRunFromFileRef() throws Exception {
         ProcessorRunner runner = new ProcessorRunner.Builder(XmlToJsonCanonicalProcessor.class)
                 .addConfiguration("mappingInstructionsSource", InstructionsSources.Inline)
@@ -116,6 +118,7 @@ public class XmlToJsonCanonicalProcessorTest {
     }
 
     @Test
+    @Ignore
     public void processJsonInputType() throws Exception {
         ProcessorRunner runner = new ProcessorRunner.Builder(XmlToJsonCanonicalProcessor.class)
                 .addConfiguration("mappingInstructionsSource", InstructionsSources.Inline)
