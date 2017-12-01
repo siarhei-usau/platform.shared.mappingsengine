@@ -44,7 +44,7 @@ buildscript {
 
 allprojects {
     group 'com.ebsco.entarch'
-    version '1.0.14-SNAPSHOT'
+    version '1.0.14'
 }
 
 
