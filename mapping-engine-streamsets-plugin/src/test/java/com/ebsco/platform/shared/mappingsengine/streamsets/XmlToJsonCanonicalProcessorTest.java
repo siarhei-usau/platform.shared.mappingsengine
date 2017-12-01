@@ -26,7 +26,6 @@ import java.util.Set;
 import static com.ebsco.entarch.mappings.streamsets.RecordUtils.write;
 import static java.util.Collections.singletonList;
 import static org.junit.Assert.assertEquals;
-@Ignore
 public class XmlToJsonCanonicalProcessorTest {
 
     private static final String XML_INPUT_FIELD_NAME = "/rawXML";

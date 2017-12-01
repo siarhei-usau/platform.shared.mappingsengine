@@ -76,7 +76,7 @@ public class MultiSelectJMESJson implements JsonTransformer {
             for (int j = 0; j < allMatches.size(); j++) {
                 if (input.get(i).findValue(allMatches.get(j)) == null) {
                     ObjectNode jNode = ((ArrayNode) input.get(i)).addObject();
-                    jNode.put(allMatches.get(j), "null");
+                    jNode.put(allMatches.get(j), "");
                 }
             }
         }

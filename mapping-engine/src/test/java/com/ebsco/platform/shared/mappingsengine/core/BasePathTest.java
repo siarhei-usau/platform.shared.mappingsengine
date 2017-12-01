@@ -69,7 +69,13 @@ public abstract class BasePathTest {
             "                [ { \"one\": \"value1A\" },{ \"two\": \"value2A\" } ],\n"+
             "                [ { \"one\": \"value1B\" },{ \"two\": \"value2B\" } ],\n"+
             "                [ { \"one\": \"value1C\" },{ \"two\": \"value2C\" } ]\n"+
-            "            ]\n"+
+            "            ],\"contrib\": [\n" +
+            "  [{\"contrib-type\": \"author\"},{\"surname\": \"Chen\"},\n" +
+            "\t{\"contrib-id-string\": \"38787138\"}],\n" +
+            "  [{\"rid\": 2},{\"contrib-type\": \"author\"},\n" +
+            "    {\"given-names\": \"Patrick Mark\"}\n" +
+            "    ,{\"surname\": \"Singh\"}]\n" +
+            "    ]\n"+
             "        }";
 
     protected Configuration jpathConfig = Configuration.builder()
