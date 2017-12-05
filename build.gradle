@@ -1,9 +1,3 @@
-apply plugin: 'io.spring.dependency-management'
-apply plugin: 'maven'
-apply plugin: 'com.jfrog.artifactory'
-apply plugin: 'maven-publish'
-apply plugin: 'java'
-
 buildscript {
     ext.streamsets_api_version = '2.7.+'
     ext.streamsets_sdk_version = '2.7.+'
@@ -19,6 +13,7 @@ buildscript {
     ext.version_aws_sdk = '1.11.226'
     ext.dependency_management_version = '0.6.0.RELEASE'
     ext.kotlin_version = '1.1.60'
+    ext.sonarGradlePluginVersion = '2.6.1'
 
     repositories {
         jcenter()
@@ -38,9 +33,21 @@ buildscript {
         classpath "io.spring.gradle:dependency-management-plugin:$dependency_management_version"
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath 'ru.vyarus:gradle-pom-plugin:1.2.0'
+        classpath "org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:$sonarGradlePluginVersion"
+        classpath "gradle.plugin.com.github.spotbugs:gradlePlugin:1.6.0"
     }
 }
 
+plugins {
+    id "org.sonarqube" version "2.6.1"
+}
+
+apply plugin: 'io.spring.dependency-management'
+apply plugin: 'maven'
+apply plugin: 'com.jfrog.artifactory'
+apply plugin: 'maven-publish'
+apply plugin: 'java'
+apply plugin: 'org.sonarqube'
 
 allprojects {
     group 'com.ebsco.entarch'
@@ -126,6 +133,145 @@ subprojects {
         }
     }
 
+    ///////////
+    // CHECKS
+    ///////////
+
+    ////////////
+    // SonarQube
+    // http://10.31.235.69:9000/projects/favorite
+    // https://blog.sonarsource.com/what-makes-checkstyle-pmd-findbugs-and-macker-complementary/
+    // TODO: Integrate SonarQube with Checkstyle, PMD, Spotbugs
+    ////////////
+    sonarqube {
+        properties {
+            //Sonar Server properties
+            property 'sonar.host.url', 'http://10.31.235.69:9000'               // default: localhost:9000
+            property 'sonar.projectName', "$rootProject.name"
+            property 'sonar.projectKey', "$rootProject.group:$rootProject.name" // default: "$project.group:$project.name"
+            property 'sonar.jacoco.reportPaths', "$buildDir/jacoco/test.exec"
+        }
+    }
+
+    ////////////
+    // JaCoCo
+    // https://docs.gradle.org/current/userguide/jacoco_plugin.html
+    // https://docs.gradle.org/current/dsl/org.gradle.testing.jacoco.plugins.JacocoPluginExtension.html
+    // https://docs.gradle.org/current/dsl/org.gradle.testing.jacoco.plugins.JacocoTaskExtension.html
+    ////////////
+    apply plugin: 'jacoco'
+    jacoco {
+        toolVersion = "0.7.9"
+    }
+    jacocoTestReport {
+        reports {
+            xml.enabled false
+            csv.enabled false
+            html.enabled true
+            html.destination file("$buildDir/reports/jacocoHtml")
+        }
+    }
+    test.finalizedBy jacocoTestReport
+    jacocoTestCoverageVerification {
+        violationRules {
+            rule {
+                limit {
+                    //TODO: Should be increased till 80% (0.8)
+                    minimum = 0.42
+                }
+            }
+        }
+    }
+    jacocoTestReport.finalizedBy jacocoTestCoverageVerification
+
+    //////////////
+    // Checkstyle
+    // https://docs.gradle.org/current/userguide/checkstyle_plugin.html
+    // https://docs.gradle.org/current/dsl/org.gradle.api.plugins.quality.CheckstyleExtension.html
+    //////////////
+    apply plugin: 'checkstyle'
+    checkstyle {
+        toolVersion = '7.6.1'
+        //TODO: Should be disabled
+        ignoreFailures = false
+        sourceSets = [sourceSets.main] // test sources excluded
+        configFile = new File(rootDir, "/config/checkstyle/google_checks.xml")
+    }
+    tasks.withType(Checkstyle) {
+        reports {
+            xml.enabled false
+            html.enabled true
+            //html.stylesheet resources.text.fromFile('config/xsl/checkstyle-custom.xsl')
+        }
+    }
+
+    ////////////
+    // PMD
+    // https://docs.gradle.org/current/userguide/pmd_plugin.html
+    // https://docs.gradle.org/current/dsl/org.gradle.api.plugins.quality.PmdExtension.html
+    // https://github.com/pmd/pmd/tree/master/pmd-java/src/main/resources/rulesets/java
+    ////////////
+    apply plugin: 'pmd'
+    pmd {
+        toolVersion = '5.8.1'
+        //TODO: Should be disabled
+        ignoreFailures = true
+        sourceSets = [sourceSets.main] // test sources excluded
+        //ruleSetFiles = files('path/to/ruleSet.xml')
+        ruleSets = [
+                'java-basic',
+                'java-braces',
+                'java-clone',
+                'java-codesize',
+                'java-comments',
+                'java-controversial',
+                'java-coupling',
+                'java-design',
+                'java-empty',
+                'java-finalizers',
+                'java-imports',
+                'java-j2ee',
+                'java-javabeans',
+                'java-junit',
+                'java-logging-jakarta-commons',
+                'java-logging-java',
+                'java-migrating',
+                'java-naming',
+                'java-optimizations',
+                'java-strictexception',
+                'java-strings',
+                'java-sunsecure',
+                'java-typeresolution',
+                'java-unnecessary',
+                'java-unusedcode'
+        ]
+    }
+    tasks.withType(Pmd) {
+        reports {
+            xml.enabled = false
+            html.enabled = true
+        }
+    }
+
+    ////////////
+    // Spotbugs
+    // http://spotbugs.readthedocs.io/en/latest/gradle.html
+    ////////////
+    apply plugin: "com.github.spotbugs"
+    spotbugs {
+        toolVersion = '3.1.0'
+        //TODO: Should be disabled
+        ignoreFailures = true
+        sourceSets = [sourceSets.main]   // test sources excluded
+        effort = "max"
+        reportLevel = "high"
+    }
+    tasks.withType(com.github.spotbugs.SpotBugsTask) {
+        reports {
+            xml.enabled = false
+            html.enabled = true
+        }
+    }
 }
 artifactory {
     contextUrl = 'https://eis.jfrog.io/eis'
@@ -138,5 +284,3 @@ artifactory {
         defaults { publications('mavenJava') }
     }
 }
-
-

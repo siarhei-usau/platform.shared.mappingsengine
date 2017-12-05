@@ -3,3 +3,11 @@ build/
 out/
 .gradle/
 .DS_Store
+mapping-engine-cli/mapping-engine-cli.iml
+mapping-engine-config-json/mapping-engine-config-json.iml
+mapping-engine-streamsets-plugin/mapping-engine-streamsets-plugin.iml
+mapping-engine-xml-reader/mapping-engine-xml-reader.iml
+mapping-engine/mapping-engine.iml
+platform.shared.mappingsengine.iml
+platform.shared.mappingsengine.ipr
+platform.shared.mappingsengine.iws
