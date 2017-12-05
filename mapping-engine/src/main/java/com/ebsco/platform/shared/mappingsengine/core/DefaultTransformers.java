@@ -18,5 +18,6 @@ public class DefaultTransformers {
         TRANFORMERS.put("insert", InsertJson.class);
         TRANFORMERS.put("pivot", PivotJson.class);
         TRANFORMERS.put("multiselect", MultiSelectJMESJson.class);
+        TRANFORMERS.put("disarray", DeArrayJson.class);
     }
 }

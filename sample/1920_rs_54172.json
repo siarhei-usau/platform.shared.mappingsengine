@@ -163,7 +163,8 @@
       "given-names": "Zhenmu"
     },
     {
-      "surname": "Chen"
+      "surname": ["Chen"],
+      "surname2": ["Chen2"]
     },
     {
       "contrib-id-string": "38787138"
@@ -180,7 +181,7 @@
       "given-names": "Patrick Mark"
     },
     {
-      "surname": "Singh"
+      "surname": ["Singh","Blabla"]
     },
     {
       "contrib-id-string": "31080011"

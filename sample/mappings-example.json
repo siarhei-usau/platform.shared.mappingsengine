@@ -84,6 +84,20 @@
         "filterExpression": "{rid: [].\"rid\" | [0], ctype: [].\"contrib-id-string\" | [0], name: [].\"given-names\" | [0], surname: [].\"surname\" | [0]}",
         "targetPath": "$+contribresult"
       }
+    },
+    {
+      "type": "disarray",
+      "config": {
+        "fromPath": "$.contrib[*][*]",
+        "keyField": "surname"
+      }
+    },
+    {
+      "type": "disarray",
+      "config": {
+        "fromPath": "$.contribresult",
+        "keyField": "surname"
+      }
     }
   ],
   "configuration": {
