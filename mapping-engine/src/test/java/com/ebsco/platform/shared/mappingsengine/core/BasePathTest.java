@@ -70,12 +70,26 @@ public abstract class BasePathTest {
             "                [ { \"one\": \"value1B\" },{ \"two\": \"value2B\" } ],\n"+
             "                [ { \"one\": \"value1C\" },{ \"two\": \"value2C\" } ]\n"+
             "            ],\"contrib\": [\n" +
-            "  [{\"contrib-type\": \"author\"},{\"surname\": \"Chen\"},\n" +
-            "\t{\"contrib-id-string\": \"38787138\"}],\n" +
-            "  [{\"rid\": 2},{\"contrib-type\": \"author\"},\n" +
-            "    {\"given-names\": \"Patrick Mark\"}\n" +
-            "    ,{\"surname\": \"Singh\"}]\n" +
-            "    ]\n"+
+            "               [" +
+            "                 {\"contrib-type\": \"author\"}," +
+            "                 {\"surname\": [\"Chen\"]},\n" +
+            "               \t{\"contrib-id-string\": \"38787138\"}],\n" +
+            "                [{\"rid\": 2}," +
+            "                 {\"contrib-type\": \"author\"},\n" +
+            "                 {\"given-names\": \"Patrick Mark\"}\n" +
+            "                ,{\"surname\": \"Singh\"}]\n" +
+            "               ]\n"+
+            "            ,\"contribresult\" : [ {\n" +
+            "                 \"rid\" : 1,\n" +
+            "                 \"ctype\" : \"38787138\",\n" +
+            "                 \"name\" : \"Zhenmu\",\n" +
+            "                  \"surname\" : [\"Chen\"]\n" +
+            "            }, {\n" +
+            "                 \"rid\" : 2,\n" +
+            "                 \"ctype\" : \"31080011\",\n" +
+            "                 \"name\" : \"Patrick Mark\",\n" +
+            "                 \"surname\" : [ \"Singh\", \"Blabla\" ]\n" +
+            "            }]" +
             "        }";
 
     protected Configuration jpathConfig = Configuration.builder()

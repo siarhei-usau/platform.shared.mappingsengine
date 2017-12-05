@@ -1,15 +1,11 @@
 package com.ebsco.platform.shared.mappingsengine.core;
 
 import com.ebsco.platform.shared.mappingsengine.core.transformers.*;
-import com.ebsco.platform.shared.mappingsengine.core.JsonTransformerContext;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import java.lang.reflect.Array;
 import java.util.*;
 
 import static java.util.Collections.emptyList;
@@ -218,20 +214,43 @@ public class TransformsTest extends BasePathTest {
     }
 
     @Test
-    public void testMultiselectTramsformer()  throws Exception {
+    public void testMultiselectTramsformer() throws Exception {
         JsonTransformerContext context = makeContext();
 //        Object fragment = new ObjectMapper().readValue("[{\"contrib-id-string\": \"38787138\"}]", List.class);
-        new MultiSelectJMESJson("$.contrib", "$+contributors", "{rid: [].\"rid\" | [0], ctype: [].\"contrib-id-string\" | [0], name: [].\"given-names\" | [0]}").apply(context);
+        new MultiSelectJMESJson("$.contrib", "$+contributors", "{rid: [].\"rid\" | [0], ctype: [].\"contrib-id-string\" | [0], name: [].\"given-names\" | [0], surname: [].\"surname\" | [0]}").apply(context);
         printJson(context.getJsonObject(), "MultiSelectJMESJson");
         Object fragment = new ObjectMapper().readValue("[ {\n" +
                 "    \"rid\" : \"\",\n" +
                 "    \"ctype\" : \"38787138\",\n" +
-                "    \"name\" : \"\"\n" +
+                "    \"name\" : \"\",\n" +
+                "    \"surname\" : [\"Chen\"]\n" +
                 "  }, {\n" +
                 "    \"rid\" : 2,\n" +
                 "    \"ctype\" : \"\",\n" +
-                "    \"name\" : \"Patrick Mark\"\n" +
+                "    \"name\" : \"Patrick Mark\",\n" +
+                "    \"surname\" : \"Singh\"\n" +
                 "  } ]", ArrayNode.class);
         assertEquals(fragment, context.queryForValue(".contributors"));
+    }
+
+    @Test
+    public void testDisArrayTransformerForArrayList() throws Exception {
+        JsonTransformerContext context = makeContext();
+        new DisArrayJson("$.contrib[*][*]", "surname").apply(context);
+        printJson(context.getJsonObject(), "DisArrayJson");
+        assertEquals("Chen", context.queryForValue("$.contrib[0][1].surname"));
+        assertEquals("Singh", context.queryForValue("$.contrib[1][3].surname"));
+    }
+
+    @Test
+    public void testDisArrayTransformerForArrayNode() throws Exception {
+        JsonTransformerContext context = makeContext();
+        new DisArrayJson("$.contribresult", "surname").apply(context);
+        printJson(context.getJsonObject(), "DisArrayJson");
+        ArrayList<String> al = new ArrayList<String>();
+        al.add("Singh");
+        al.add("Blabla");
+        assertEquals("Chen", context.queryForValue(".contribresult[0].surname"));
+        assertEquals(al, context.queryForValue(".contribresult[1].surname"));
     }
 }

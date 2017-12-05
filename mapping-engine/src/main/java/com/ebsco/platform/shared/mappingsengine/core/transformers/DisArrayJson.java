@@ -44,7 +44,7 @@ public class DisArrayJson implements JsonTransformer {
         List<ResolvedPaths> fromToMapping = context.queryAndResolveTargetPaths(compiledSourceJsonPath, targetPath);
         fromToMapping.forEach(mapping -> {
             Object sourceValue = context.queryForValue(mapping.getSourcePath());
-
+            //for cases like "contrib" : [ [ {},{} ], [ {}, {} ]...] "fromPath": "$.contrib[*][*]"
             if (context.getJpathCtx().configuration().jsonProvider().isMap(sourceValue) && context.getJpathCtx().configuration().jsonProvider().getPropertyKeys(sourceValue).contains(keyField)) {
                 Map map = mapper.convertValue(sourceValue, Map.class);
                 map.forEach((mapKey, mapValue) -> {
@@ -56,7 +56,8 @@ public class DisArrayJson implements JsonTransformer {
                 });
                 context.applyUpdate(mapping, map);
             }
-            if (sourceValue instanceof ArrayNode) {
+            //for cases like "contribresult" : [ {},{}...] "fromPath": "$.contribresult"
+            if (sourceValue instanceof ArrayNode || sourceValue instanceof ArrayList) {
                 List list = mapper.convertValue(sourceValue, List.class);
                 list.forEach(item -> {
                     if (context.getJpathCtx().configuration().jsonProvider().getPropertyKeys(item).contains(keyField)) {
