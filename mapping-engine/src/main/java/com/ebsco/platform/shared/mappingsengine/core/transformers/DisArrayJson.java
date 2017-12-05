@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class DeArrayJson implements JsonTransformer {
+public class DisArrayJson implements JsonTransformer {
     @NonNull
     private String fromPath;
 
@@ -30,8 +30,8 @@ public class DeArrayJson implements JsonTransformer {
     private ObjectMapper mapper = new ObjectMapper();
 
     @JsonCreator
-    public DeArrayJson(@NotNull @JsonProperty("fromPath") String fromPath,
-                       @NotNull @JsonProperty("keyField") String keyField) {
+    public DisArrayJson(@NotNull @JsonProperty("fromPath") String fromPath,
+                        @NotNull @JsonProperty("keyField") String keyField) {
         this.fromPath = fromPath;
         this.targetPath = fromPath;
         this.compiledSourceJsonPath = JsonPath.compile(this.fromPath);
@@ -48,7 +48,7 @@ public class DeArrayJson implements JsonTransformer {
             if (context.getJpathCtx().configuration().jsonProvider().isMap(sourceValue) && context.getJpathCtx().configuration().jsonProvider().getPropertyKeys(sourceValue).contains(keyField)) {
                 Map map = mapper.convertValue(sourceValue, Map.class);
                 map.forEach((mapKey, mapValue) -> {
-                    if (mapValue instanceof ArrayList) {
+                    if (mapKey.equals(keyField) && mapValue instanceof ArrayList) {
                         if (((ArrayList) mapValue).size() == 1) {
                             map.put(keyField, ((ArrayList) mapValue).get(0));
                         }
